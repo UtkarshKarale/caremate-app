@@ -1,6 +1,6 @@
 
 import React, { useState } from 'react';
-import { View, Text, TextInput, TouchableOpacity, Alert } from 'react-native';
+import { View, Text, TextInput, TouchableOpacity, Alert, Image } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useRouter } from 'expo-router';
 import { login } from '@/lib/api';
@@ -22,15 +22,22 @@ const LoginScreen = () => {
   };
 
   return (
-    <SafeAreaView className="flex-1 bg-gray-100">
-      <View className="flex-1 justify-center items-center p-8">
-        <Text className="text-4xl font-bold text-gray-800 mb-8">Welcome Back</Text>
+    <SafeAreaView style={{ flex: 1, backgroundColor: '#111827' }}>
+      <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center', padding: 32 }}>
+        {/* Replace with your logo */}
+        <Image
+          source={{ uri: 'https://via.placeholder.com/150' }} // Replace with your logo URL or local image
+          style={{ width: 150, height: 150, marginBottom: 32 }}
+        />
 
-        <View className="w-full mb-4">
-          <Text className="text-lg text-gray-600 mb-2">Email</Text>
+        <Text style={{ fontSize: 32, fontWeight: 'bold', color: 'white', marginBottom: 32 }}>Welcome Back</Text>
+
+        <View style={{ width: '100%', marginBottom: 16 }}>
+          <Text style={{ fontSize: 16, color: '#9CA3AF', marginBottom: 8 }}>Email</Text>
           <TextInput
-            className="w-full h-12 bg-white rounded-lg px-4 text-lg"
+            style={{ width: '100%', height: 48, backgroundColor: '#1F2937', borderRadius: 8, paddingHorizontal: 16, fontSize: 16, color: 'white' }}
             placeholder="Enter your email"
+            placeholderTextColor="#9CA3AF"
             keyboardType="email-address"
             autoCapitalize="none"
             value={email}
@@ -38,31 +45,32 @@ const LoginScreen = () => {
           />
         </View>
 
-        <View className="w-full mb-6">
-          <Text className="text-lg text-gray-600 mb-2">Password</Text>
+        <View style={{ width: '100%', marginBottom: 24 }}>
+          <Text style={{ fontSize: 16, color: '#9CA3AF', marginBottom: 8 }}>Password</Text>
           <TextInput
-            className="w-full h-12 bg-white rounded-lg px-4 text-lg"
+            style={{ width: '100%', height: 48, backgroundColor: '#1F2937', borderRadius: 8, paddingHorizontal: 16, fontSize: 16, color: 'white' }}
             placeholder="Enter your password"
+            placeholderTextColor="#9CA3AF"
             secureTextEntry
             value={password}
             onChangeText={setPassword}
           />
           <TouchableOpacity>
-            <Text className="text-right text-blue-500 mt-2">Forgot password?</Text>
+            <Text style={{ textAlign: 'right', color: '#3B82F6', marginTop: 8 }}>Forgot password?</Text>
           </TouchableOpacity>
         </View>
 
         <TouchableOpacity
-          className="w-full h-12 bg-blue-500 rounded-lg justify-center items-center mb-4"
+          style={{ width: '100%', height: 48, backgroundColor: '#3B82F6', borderRadius: 8, justifyContent: 'center', alignItems: 'center', marginBottom: 16 }}
           onPress={handleLogin}
         >
-          <Text className="text-white text-lg font-bold">Login</Text>
+          <Text style={{ color: 'white', fontSize: 16, fontWeight: 'bold' }}>Login</Text>
         </TouchableOpacity>
 
-        <View className="flex-row">
-          <Text className="text-gray-600">Don't have an account? </Text>
+        <View style={{ flexDirection: 'row' }}>
+          <Text style={{ color: '#9CA3AF' }}>Don't have an account? </Text>
           <TouchableOpacity onPress={() => router.push('/signup')}>
-            <Text className="text-blue-500">Sign up</Text>
+            <Text style={{ color: '#3B82F6' }}>Sign up</Text>
           </TouchableOpacity>
         </View>
       </View>

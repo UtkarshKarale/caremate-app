@@ -20,25 +20,27 @@ const SignupScreen = () => {
   };
 
   return (
-    <SafeAreaView style={{ flex: 1, backgroundColor: '#f3f4f6' }}>
+    <SafeAreaView style={{ flex: 1, backgroundColor: '#111827' }}>
       <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center', padding: 32 }}>
-        <Text style={{ fontSize: 32, fontWeight: 'bold', color: '#1f2937', marginBottom: 32 }}>Create Account</Text>
+        <Text style={{ fontSize: 32, fontWeight: 'bold', color: 'white', marginBottom: 32 }}>Create Account</Text>
 
         <View style={{ width: '100%', marginBottom: 16 }}>
-          <Text style={{ fontSize: 16, color: '#4b5563', marginBottom: 8 }}>Full Name</Text>
+          <Text style={{ fontSize: 16, color: '#9CA3AF', marginBottom: 8 }}>Full Name</Text>
           <TextInput
-            style={{ width: '100%', height: 48, backgroundColor: 'white', borderRadius: 8, paddingHorizontal: 16, fontSize: 16 }}
+            style={{ width: '100%', height: 48, backgroundColor: '#1F2937', borderRadius: 8, paddingHorizontal: 16, fontSize: 16, color: 'white' }}
             placeholder="Enter your full name"
+            placeholderTextColor="#9CA3AF"
             value={name}
             onChangeText={setName}
           />
         </View>
 
         <View style={{ width: '100%', marginBottom: 16 }}>
-          <Text style={{ fontSize: 16, color: '#4b5563', marginBottom: 8 }}>Email</Text>
+          <Text style={{ fontSize: 16, color: '#9CA3AF', marginBottom: 8 }}>Email</Text>
           <TextInput
-            style={{ width: '100%', height: 48, backgroundColor: 'white', borderRadius: 8, paddingHorizontal: 16, fontSize: 16 }}
+            style={{ width: '100%', height: 48, backgroundColor: '#1F2937', borderRadius: 8, paddingHorizontal: 16, fontSize: 16, color: 'white' }}
             placeholder="Enter your email"
+            placeholderTextColor="#9CA3AF"
             keyboardType="email-address"
             autoCapitalize="none"
             value={email}
@@ -47,10 +49,11 @@ const SignupScreen = () => {
         </View>
 
         <View style={{ width: '100%', marginBottom: 16 }}>
-          <Text style={{ fontSize: 16, color: '#4b5563', marginBottom: 8 }}>Password</Text>
+          <Text style={{ fontSize: 16, color: '#9CA3AF', marginBottom: 8 }}>Password</Text>
           <TextInput
-            style={{ width: '100%', height: 48, backgroundColor: 'white', borderRadius: 8, paddingHorizontal: 16, fontSize: 16 }}
+            style={{ width: '100%', height: 48, backgroundColor: '#1F2937', borderRadius: 8, paddingHorizontal: 16, fontSize: 16, color: 'white' }}
             placeholder="Enter your password"
+            placeholderTextColor="#9CA3AF"
             secureTextEntry
             value={password}
             onChangeText={setPassword}
@@ -58,12 +61,13 @@ const SignupScreen = () => {
         </View>
 
         <View style={{ width: '100%', marginBottom: 24 }}>
-          <Text style={{ fontSize: 16, color: '#4b5563', marginBottom: 8 }}>Role</Text>
-          <View style={{ width: '100%', height: 48, backgroundColor: 'white', borderRadius: 8, justifyContent: 'center' }}>
+          <Text style={{ fontSize: 16, color: '#9CA3AF', marginBottom: 8 }}>Role</Text>
+          <View style={{ width: '100%', height: 48, backgroundColor: '#1F2937', borderRadius: 8, justifyContent: 'center' }}>
             <Picker
               selectedValue={role}
               onValueChange={(itemValue) => setRole(itemValue)}
-              style={{ height: 48, width: '100%' }}
+              style={{ height: 48, width: '100%', color: 'white' }}
+              itemStyle={{ color: 'white' }}
             >
               <Picker.Item label="Doctor" value="doctor" />
               <Picker.Item label="Nurse" value="nurse" />
@@ -73,16 +77,16 @@ const SignupScreen = () => {
         </View>
 
         <TouchableOpacity
-          style={{ width: '100%', height: 48, backgroundColor: '#3b82f6', borderRadius: 8, justifyContent: 'center', alignItems: 'center', marginBottom: 16 }}
+          style={{ width: '100%', height: 48, backgroundColor: '#3B82F6', borderRadius: 8, justifyContent: 'center', alignItems: 'center', marginBottom: 16 }}
           onPress={handleContinue}
         >
           <Text style={{ color: 'white', fontSize: 16, fontWeight: 'bold' }}>Continue</Text>
         </TouchableOpacity>
 
         <View style={{ flexDirection: 'row' }}>
-          <Text style={{ color: '#4b5563' }}>Already have an account? </Text>
+          <Text style={{ color: '#9CA3AF' }}>Already have an account? </Text>
           <TouchableOpacity onPress={() => router.push('/login')}>
-            <Text style={{ color: '#3b82f6' }}>Login</Text>
+            <Text style={{ color: '#3B82F6' }}>Login</Text>
           </TouchableOpacity>
         </View>
       </View>
