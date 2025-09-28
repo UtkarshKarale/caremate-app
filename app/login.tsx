@@ -5,17 +5,23 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { useRouter } from 'expo-router';
 import { login } from '@/lib/api';
 import { saveToken } from '@/lib/auth';
+import { Picker } from '@react-native-picker/picker';
 
 const LoginScreen = () => {
   const router = useRouter();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [role, setRole] = useState('patient');
 
   const handleLogin = async () => {
     try {
-      const { token } = await login(email, password);
+      const { token } = await login(email, password, role);
       await saveToken(token);
-      router.push('/(tabs)');
+      if (role === 'admin') {
+        router.push('/admin');
+      } else {
+        router.push('/(tabs)');
+      }
     } catch (error) {
       Alert.alert('Login Failed', 'Invalid email or password. Please try again.');
     }
@@ -31,6 +37,23 @@ const LoginScreen = () => {
         />
 
         <Text style={{ fontSize: 32, fontWeight: 'bold', color: 'white', marginBottom: 32 }}>Welcome Back</Text>
+
+        <View style={{ width: '100%', marginBottom: 16 }}>
+          <Text style={{ fontSize: 16, color: '#9CA3AF', marginBottom: 8 }}>Role</Text>
+          <View style={{ width: '100%', height: 48, backgroundColor: '#1F2937', borderRadius: 8, justifyContent: 'center' }}>
+            <Picker
+              selectedValue={role}
+              onValueChange={(itemValue) => setRole(itemValue)}
+              style={{ height: 48, width: '100%', color: 'white' }}
+              itemStyle={{ color: 'white' }}
+            >
+              <Picker.Item label="Patient" value="patient" />
+              <Picker.Item label="Doctor" value="doctor" />
+              <Picker.Item label="Receptionist" value="receptionist" />
+              <Picker.Item label="Admin" value="admin" />
+            </Picker>
+          </View>
+        </View>
 
         <View style={{ width: '100%', marginBottom: 16 }}>
           <Text style={{ fontSize: 16, color: '#9CA3AF', marginBottom: 8 }}>Email</Text>
