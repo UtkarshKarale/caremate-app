@@ -3,19 +3,17 @@ import React, { useState } from 'react';
 import { View, Text, TextInput, TouchableOpacity } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useRouter } from 'expo-router';
-import { Picker } from '@react-native-picker/picker';
 
 const SignupScreen = () => {
   const router = useRouter();
-  const [role, setRole] = useState('doctor');
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
 
   const handleContinue = () => {
     router.push({
-      pathname: `/signup/${role}`,
-      params: { name, email, password },
+      pathname: `/signup/patient`,
+      params: { name, email, password, role: 'patient' },
     });
   };
 
@@ -58,22 +56,6 @@ const SignupScreen = () => {
             value={password}
             onChangeText={setPassword}
           />
-        </View>
-
-        <View style={{ width: '100%', marginBottom: 24 }}>
-          <Text style={{ fontSize: 16, color: '#9CA3AF', marginBottom: 8 }}>Role</Text>
-          <View style={{ width: '100%', height: 48, backgroundColor: '#1F2937', borderRadius: 8, justifyContent: 'center' }}>
-            <Picker
-              selectedValue={role}
-              onValueChange={(itemValue) => setRole(itemValue)}
-              style={{ height: 48, width: '100%', color: 'white' }}
-              itemStyle={{ color: 'white' }}
-            >
-              <Picker.Item label="Doctor" value="doctor" />
-              <Picker.Item label="Nurse" value="nurse" />
-              <Picker.Item label="Receptionist" value="receptionist" />
-            </Picker>
-          </View>
         </View>
 
         <TouchableOpacity
