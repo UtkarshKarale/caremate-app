@@ -1,35 +1,51 @@
-import { Tabs } from 'expo-router';
-import React from 'react';
+
+import { Tabs, useRouter, useFocusEffect } from 'expo-router';
+import React, { useState, useCallback } from 'react';
 
 import { HapticTab } from '@/components/haptic-tab';
 import { IconSymbol } from '@/components/ui/icon-symbol';
 import { Colors } from '@/constants/theme';
 import { useColorScheme } from '@/hooks/use-color-scheme';
+import { getRole } from '@/lib/auth';
 
 export default function TabLayout() {
-  const colorScheme = useColorScheme();
+    const colorScheme = useColorScheme();
+    const [userRole, setUserRole] = useState<string | null>(null);
 
-  return (
-    <Tabs
-      screenOptions={{
-        tabBarActiveTintColor: Colors[colorScheme ?? 'light'].tint,
-        headerShown: false,
-        tabBarButton: HapticTab,
-      }}>
-      <Tabs.Screen
-        name="index"
-        options={{
-          title: 'Home',
-          tabBarIcon: ({ color }) => <IconSymbol size={28} name="house.fill" color={color} />,
-        }}
-      />
-      <Tabs.Screen
-        name="explore"
-        options={{
-          title: 'Explore',
-          tabBarIcon: ({ color }) => <IconSymbol size={28} name="paperplane.fill" color={color} />,
-        }}
-      />
-    </Tabs>
-  );
+    useFocusEffect(
+        useCallback(() => {
+            const fetchRole = async () => {
+                const role = await getRole();
+                setUserRole(role);
+            };
+            fetchRole();
+        }, [])
+    );
+
+    return (
+        <Tabs
+            screenOptions={{
+                tabBarActiveTintColor: Colors[colorScheme ?? 'light'].tint,
+                headerShown: false,
+                tabBarButton: HapticTab,
+            }}>
+            <Tabs.Screen
+                name="index"
+                options={{
+                    title: 'Home',
+                    tabBarIcon: ({ color }) => <IconSymbol size={28} name="house.fill" color={color} />,
+                }}
+            />
+
+            {userRole === 'ADMIN' && (
+                <Tabs.Screen
+                    name="admin"
+                    options={{
+                        title: 'User Management',
+                        tabBarIcon: ({ color }) => <IconSymbol size={28} name="person.2.fill" color={color} />,
+                    }}
+                />
+            )}
+        </Tabs>
+    );
 }
