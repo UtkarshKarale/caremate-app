@@ -1,75 +1,103 @@
-
-import React, { useEffect, useState } from 'react';
-import { View, Text, FlatList, TouchableOpacity, Alert } from 'react-native';
-import { getAllUsers, updateUser } from '@/lib/api';
+import React from 'react';
+import { View, Text, StyleSheet, SafeAreaView, StatusBar, ScrollView } from 'react-native';
+import { IconSymbol } from '@/components/ui/icon-symbol';
 
 const AdminScreen = () => {
-  const [users, setUsers] = useState([]);
-
-  const fetchUsers = async () => {
-    try {
-      const allUsers = await getAllUsers();
-      setUsers(allUsers);
-    } catch (error) {
-      Alert.alert('Error', 'Failed to fetch users.');
-    }
-  };
-
-  useEffect(() => {
-    fetchUsers();
-  }, []);
-
-  const handleRoleChange = (user) => {
-    Alert.prompt(
-      'Change Role',
-      `Enter new role for ${user.fullName}`,
-      [
-        {
-          text: 'Cancel',
-          style: 'cancel',
-        },
-        {
-          text: 'OK',
-          onPress: async (newRole) => {
-            if (newRole) {
-              try {
-                await updateUser(user.id, { ...user, roles: newRole.toUpperCase() });
-                fetchUsers(); // Refresh the list
-              } catch (error) {
-                Alert.alert('Error', `Failed to update user role. ${error.message}`);
-              }
-            }
-          },
-        },
-      ],
-      'plain-text',
-      user.roles
-    );
-  };
-
-  const renderItem = ({ item }) => (
-    <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', padding: 16, borderBottomWidth: 1, borderBottomColor: '#333' }}>
-      <View>
-        <Text style={{ color: 'white', fontSize: 16 }}>{item.fullName}</Text>
-        <Text style={{ color: '#999', fontSize: 12 }}>{item.email}</Text>
-        <Text style={{ color: '#999', fontSize: 12 }}>Role: {item.roles}</Text>
-      </View>
-      <TouchableOpacity onPress={() => handleRoleChange(item)} style={{ backgroundColor: '#3B82F6', padding: 8, borderRadius: 4 }}>
-        <Text style={{ color: 'white' }}>Change Role</Text>
-      </TouchableOpacity>
-    </View>
-  );
+  const stats = [
+    { title: 'Users', value: '1,250', icon: 'person.3.fill', color: '#3B82F6' },
+    { title: 'Doctors', value: '75', icon: 'heart.text.square.fill', color: '#10B981' },
+    { title: 'Receptionists', value: '20', icon: 'person.crop.circle.badge.plus', color: '#F59E0B' },
+    { title: 'Appointments', value: '450', icon: 'calendar', color: '#8B5CF6' },
+  ];
 
   return (
-    <View style={{ flex: 1, backgroundColor: '#111827', paddingTop: 50 }}>
-      <Text style={{ fontSize: 24, fontWeight: 'bold', color: 'white', textAlign: 'center', marginBottom: 20 }}>User Management</Text>
-      <FlatList
-        data={users}
-        renderItem={renderItem}
-        keyExtractor={(item) => item.id.toString()}
-      />
-    </View>
+    <SafeAreaView style={styles.safeArea}>
+      <StatusBar barStyle="dark-content" />
+      <ScrollView contentContainerStyle={styles.container}>
+        <Text style={styles.headerTitle}>Users</Text>
+
+        <View style={styles.statsContainer}>
+          {stats.map((stat, index) => (
+            <View key={index} style={[styles.statCard, { backgroundColor: stat.color }]}>
+              <IconSymbol name={stat.icon} size={32} color="#FFFFFF" />
+              <Text style={styles.statValue}>{stat.value}</Text>
+              <Text style={styles.statTitle}>{stat.title}</Text>
+            </View>
+          ))}
+        </View>
+
+        <View style={styles.chartContainer}>
+          <Text style={styles.sectionTitle}>Patient Statistics</Text>
+          <View style={styles.chartPlaceholder}>
+            <Text style={styles.chartPlaceholderText}>Graph will be shown here</Text>
+          </View>
+        </View>
+      </ScrollView>
+    </SafeAreaView>
   );
 };
+
+const styles = StyleSheet.create({
+  safeArea: {
+    flex: 1,
+    backgroundColor: '#F0F4F8',
+  },
+  container: {
+    padding: 20,
+    paddingTop: 50,
+  },
+  headerTitle: {
+    fontSize: 28,
+    fontWeight: 'bold',
+    color: '#1E293B',
+    marginBottom: 20,
+  },
+  statsContainer: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    justifyContent: 'space-between',
+  },
+  statCard: {
+    width: '48%',
+    borderRadius: 12,
+    padding: 20,
+    marginBottom: 16,
+    alignItems: 'center',
+  },
+  statValue: {
+    fontSize: 28,
+    fontWeight: 'bold',
+    color: '#FFFFFF',
+    marginTop: 8,
+  },
+  statTitle: {
+    fontSize: 16,
+    color: '#FFFFFF',
+    marginTop: 4,
+  },
+  chartContainer: {
+    marginTop: 20,
+    backgroundColor: '#FFFFFF',
+    borderRadius: 12,
+    padding: 20,
+  },
+  sectionTitle: {
+    fontSize: 20,
+    fontWeight: 'bold',
+    color: '#1E293B',
+    marginBottom: 16,
+  },
+  chartPlaceholder: {
+    height: 200,
+    justifyContent: 'center',
+    alignItems: 'center',
+    backgroundColor: '#E2E8F0',
+    borderRadius: 8,
+  },
+  chartPlaceholderText: {
+    color: '#64748B',
+    fontSize: 16,
+  },
+});
 
 export default AdminScreen;

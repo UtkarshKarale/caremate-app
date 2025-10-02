@@ -1,5 +1,4 @@
-
-import { Tabs, useRouter, useFocusEffect } from 'expo-router';
+import { Tabs, useFocusEffect } from 'expo-router';
 import React, { useState, useCallback } from 'react';
 
 import { HapticTab } from '@/components/haptic-tab';
@@ -41,11 +40,39 @@ export default function TabLayout() {
                 <Tabs.Screen
                     name="admin"
                     options={{
-                        title: 'User Management',
+                        title: 'Users',
                         tabBarIcon: ({ color }) => <IconSymbol size={28} name="person.2.fill" color={color} />,
                     }}
                 />
             )}
+
+            {userRole === 'USER' && (
+                <Tabs.Screen
+                    name="my-appointments"
+                    options={{
+                        title: 'My Appointments',
+                        tabBarIcon: ({ color }) => <IconSymbol size={28} name="calendar" color={color} />,
+                    }}
+                />
+            )}
+
+            {(userRole === 'DOCTOR' || userRole === 'RECEPTIONIST') && (
+                <Tabs.Screen
+                    name="doctor"
+                    options={{
+                        title: 'Dashboard',
+                        tabBarIcon: ({ color }) => <IconSymbol size={28} name="square.grid.2x2.fill" color={color} />,
+                    }}
+                />
+            )}
+
+            <Tabs.Screen
+                name="profile"
+                options={{
+                    title: 'Profile',
+                    tabBarIcon: ({ color }) => <IconSymbol size={28} name="person.fill" color={color} />,
+                }}
+            />
         </Tabs>
     );
 }

@@ -1,9 +1,9 @@
-
 import React, { useState } from 'react';
-import { View, Text, TextInput, TouchableOpacity, Alert, KeyboardAvoidingView, Platform } from 'react-native';
+import { View, Text, TextInput, TouchableOpacity, Alert, StyleSheet, KeyboardAvoidingView, Platform } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useRouter } from 'expo-router';
 import { register } from '@/lib/api';
+import { LinearGradient } from 'expo-linear-gradient';
 
 const SignupScreen = () => {
   const router = useRouter();
@@ -17,7 +17,7 @@ const SignupScreen = () => {
       await register({ fullName, email, password, mobile, roles: 'USER' });
       Alert.alert('Success', 'User registered successfully. Please login.');
       router.push('/login');
-    } catch (error) {
+    } catch {
       Alert.alert('Signup Failed', 'An error occurred during signup. Please try again.');
     }
   };
@@ -27,75 +27,114 @@ const SignupScreen = () => {
       style={{ flex: 1 }}
       behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
     >
-      <SafeAreaView style={{ flex: 1, backgroundColor: '#111827' }}>
-        <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center', padding: 32 }}>
-          <Text style={{ fontSize: 32, fontWeight: 'bold', color: 'white', marginBottom: 32 }}>Create Account</Text>
-
-          <View style={{ width: '100%', marginBottom: 16 }}>
-            <Text style={{ fontSize: 16, color: '#9CA3AF', marginBottom: 8 }}>Full Name</Text>
+      <LinearGradient
+        colors={['#1E3A8A', '#3B82F6', '#BFDBFE']}
+        style={styles.container}
+      >
+        <SafeAreaView style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
+          <Text style={styles.title}>CareMate</Text>
+          <Text style={styles.subtitle}>Create an Account</Text>
+          <View style={styles.inputContainer}>
             <TextInput
-              style={{ width: '100%', height: 48, backgroundColor: '#1F2937', borderRadius: 8, paddingHorizontal: 16, fontSize: 16, color: 'white' }}
-              placeholder="Enter your full name"
+              style={styles.input}
+              placeholder="Full Name"
               placeholderTextColor="#9CA3AF"
               value={fullName}
               onChangeText={setFullName}
             />
-          </View>
-
-          <View style={{ width: '100%', marginBottom: 16 }}>
-            <Text style={{ fontSize: 16, color: '#9CA3AF', marginBottom: 8 }}>Email</Text>
             <TextInput
-              style={{ width: '100%', height: 48, backgroundColor: '#1F2937', borderRadius: 8, paddingHorizontal: 16, fontSize: 16, color: 'white' }}
-              placeholder="Enter your email"
+              style={styles.input}
+              placeholder="Email"
               placeholderTextColor="#9CA3AF"
               keyboardType="email-address"
               autoCapitalize="none"
               value={email}
               onChangeText={setEmail}
             />
-          </View>
-
-          <View style={{ width: '100%', marginBottom: 16 }}>
-            <Text style={{ fontSize: 16, color: '#9CA3AF', marginBottom: 8 }}>Mobile Number</Text>
             <TextInput
-              style={{ width: '100%', height: 48, backgroundColor: '#1F2937', borderRadius: 8, paddingHorizontal: 16, fontSize: 16, color: 'white' }}
-              placeholder="Enter your mobile number"
+              style={styles.input}
+              placeholder="Mobile Number"
               placeholderTextColor="#9CA3AF"
               keyboardType="phone-pad"
               value={mobile}
               onChangeText={setMobile}
             />
-          </View>
-
-          <View style={{ width: '100%', marginBottom: 16 }}>
-            <Text style={{ fontSize: 16, color: '#9CA3AF', marginBottom: 8 }}>Password</Text>
             <TextInput
-              style={{ width: '100%', height: 48, backgroundColor: '#1F2937', borderRadius: 8, paddingHorizontal: 16, fontSize: 16, color: 'white' }}
-              placeholder="Enter your password"
+              style={styles.input}
+              placeholder="Password"
               placeholderTextColor="#9CA3AF"
               secureTextEntry
               value={password}
               onChangeText={setPassword}
             />
           </View>
-
-          <TouchableOpacity
-            style={{ width: '100%', height: 48, backgroundColor: '#3B82F6', borderRadius: 8, justifyContent: 'center', alignItems: 'center', marginBottom: 16 }}
-            onPress={handleSignup}
-          >
-            <Text style={{ color: 'white', fontSize: 16, fontWeight: 'bold' }}>Sign Up</Text>
+          <TouchableOpacity style={styles.signupButton} onPress={handleSignup}>
+            <Text style={styles.signupButtonText}>Sign Up</Text>
           </TouchableOpacity>
-
-          <View style={{ flexDirection: 'row' }}>
-            <Text style={{ color: '#9CA3AF' }}>Already have an account? </Text>
+          <View style={styles.loginContainer}>
+            <Text style={styles.loginText}>Already have an account? </Text>
             <TouchableOpacity onPress={() => router.push('/login')}>
-              <Text style={{ color: '#3B82F6' }}>Login</Text>
+              <Text style={styles.loginLink}>Login</Text>
             </TouchableOpacity>
           </View>
-        </View>
-      </SafeAreaView>
+        </SafeAreaView>
+      </LinearGradient>
     </KeyboardAvoidingView>
   );
 };
+
+const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+  },
+  title: {
+    fontSize: 48,
+    fontWeight: 'bold',
+    color: 'white',
+    marginBottom: 8,
+  },
+  subtitle: {
+    fontSize: 24,
+    color: 'white',
+    marginBottom: 24,
+  },
+  inputContainer: {
+    width: '80%',
+  },
+  input: {
+    backgroundColor: 'rgba(255, 255, 255, 0.2)',
+    height: 50,
+    paddingHorizontal: 16,
+    borderRadius: 12,
+    color: 'white',
+    marginBottom: 16,
+    fontSize: 16,
+  },
+  signupButton: {
+    width: '80%',
+    height: 50,
+    backgroundColor: 'white',
+    borderRadius: 12,
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginBottom: 16,
+  },
+  signupButtonText: {
+    color: '#3B82F6',
+    fontSize: 18,
+    fontWeight: 'bold',
+  },
+  loginContainer: {
+    flexDirection: 'row',
+    justifyContent: 'center',
+  },
+  loginText: {
+    color: 'white',
+  },
+  loginLink: {
+    color: 'white',
+    fontWeight: 'bold',
+  },
+});
 
 export default SignupScreen;

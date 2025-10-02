@@ -1,77 +1,130 @@
+import React from 'react';
+import { View, Text, StyleSheet, SafeAreaView, StatusBar, TextInput, TouchableOpacity, FlatList } from 'react-native';
+import { IconSymbol } from '@/components/ui/icon-symbol';
 
-import React, { useEffect, useState } from 'react';
-import { View, Text, ActivityIndicator, Alert, TouchableOpacity } from 'react-native';
-import { getToken, deleteToken } from '@/lib/auth';
-import { findUserById } from '@/lib/api';
-import { jwtDecode } from 'jwt-decode';
-import { useRouter } from 'expo-router';
+const hospitals = [
+  { id: '1', name: 'City General Hospital', location: '123 Main St, Anytown', rating: 4.5 },
+  { id: '2', name: 'Sunrise Medical Center', location: '456 Oak Ave, Anytown', rating: 4.8 },
+  { id: '3', name: 'Evergreen Health', location: '789 Pine Ln, Anytown', rating: 4.2 },
+];
 
-const HomeScreen = () => {
-  const [user, setUser] = useState(null);
-  const [loading, setLoading] = useState(true);
-  const router = useRouter();
-
-  useEffect(() => {
-    const fetchUser = async () => {
-      try {
-        const token = await getToken();
-        if (token) {
-          const decodedToken = jwtDecode(token);
-          console.log('Decoded Token:', decodedToken);
-          const userId = decodedToken.userId; // Assuming the user ID is in the 'userId' claim
-          console.log('User ID:', userId);
-          const userData = await findUserById(userId);
-          setUser(userData);
-        }
-      } catch (error) {
-        Alert.alert('Error', 'Failed to fetch user data.');
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    fetchUser();
-  }, []);
-
-  const handleLogout = async () => {
-    await deleteToken();
-    router.push('/login');
-  };
-
-  if (loading) {
-    return (
-      <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center', backgroundColor: '#111827' }}>
-        <ActivityIndicator size="large" color="#3B82F6" />
+const UserScreen = () => {
+  const renderItem = ({ item }) => (
+    <View style={styles.hospitalCard}>
+      <View style={styles.hospitalInfo}>
+        <Text style={styles.hospitalName}>{item.name}</Text>
+        <Text style={styles.hospitalLocation}>{item.location}</Text>
+        <View style={styles.ratingContainer}>
+          <IconSymbol name="star.fill" size={16} color="#F59E0B" />
+          <Text style={styles.ratingText}>{item.rating}</Text>
+        </View>
       </View>
-    );
-  }
-
-  if (!user) {
-    return (
-      <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center', backgroundColor: '#111827' }}>
-        <Text style={{ color: 'white', fontSize: 18 }}>Could not load user data.</Text>
-      </View>
-    );
-  }
-
-  return (
-    <View style={{ flex: 1, backgroundColor: '#111827', padding: 32, paddingTop: 80 }}>
-      <Text style={{ fontSize: 32, fontWeight: 'bold', color: 'white', marginBottom: 16 }}>
-        {user.roles === 'ADMIN' ? 'Welcome Admin!' : `Welcome, ${user.fullName}!`}
-      </Text>
-      <View style={{ backgroundColor: '#1F2937', borderRadius: 8, padding: 16 }}>
-        <Text style={{ fontSize: 18, color: 'white', marginBottom: 8 }}>Email: {user.email}</Text>
-        <Text style={{ fontSize: 18, color: 'white', marginBottom: 8 }}>Mobile: {user.mobile}</Text>
-        <Text style={{ fontSize: 18, color: 'white' }}>Role: {user.roles}</Text>
-      </View>
-      <TouchableOpacity
-        style={{ position: 'absolute', top: 40, right: 20 }}
-        onPress={handleLogout}
-      >
-        <Text style={{ color: '#3B82F6', fontSize: 16 }}>Logout</Text>
+      <TouchableOpacity style={styles.bookButton}>
+        <Text style={styles.bookButtonText}>Book</Text>
       </TouchableOpacity>
     </View>
   );
+
+  return (
+    <SafeAreaView style={styles.safeArea}>
+      <StatusBar barStyle="dark-content" />
+      <View style={styles.container}>
+        <Text style={styles.headerTitle}>Find a Hospital</Text>
+        <View style={styles.searchContainer}>
+          <IconSymbol name="magnifyingglass" size={20} color="#9CA3AF" style={styles.searchIcon} />
+          <TextInput
+            style={styles.searchInput}
+            placeholder="Search for hospitals, doctors..."
+            placeholderTextColor="#9CA3AF"
+          />
+        </View>
+
+        <FlatList
+          data={hospitals}
+          renderItem={renderItem}
+          keyExtractor={(item) => item.id}
+          showsVerticalScrollIndicator={false}
+        />
+      </View>
+    </SafeAreaView>
+  );
 };
 
-export default HomeScreen;
+const styles = StyleSheet.create({
+  safeArea: {
+    flex: 1,
+    backgroundColor: '#F0F4F8',
+  },
+  container: {
+    flex: 1,
+    padding: 20,
+    paddingTop: 50, // Increased top padding
+  },
+  headerTitle: {
+    fontSize: 28,
+    fontWeight: 'bold',
+    color: '#1E293B',
+    marginBottom: 20,
+  },
+  searchContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: '#FFFFFF',
+    borderRadius: 12,
+    paddingHorizontal: 16,
+    marginBottom: 20,
+  },
+  searchIcon: {
+    marginRight: 12,
+  },
+  searchInput: {
+    flex: 1,
+    height: 50,
+    fontSize: 16,
+    color: '#1E293B',
+  },
+  hospitalCard: {
+    flexDirection: 'row',
+    backgroundColor: '#FFFFFF',
+    borderRadius: 12,
+    padding: 16,
+    marginBottom: 16,
+    alignItems: 'center',
+  },
+  hospitalInfo: {
+    flex: 1,
+  },
+  hospitalName: {
+    fontSize: 18,
+    fontWeight: 'bold',
+    color: '#1E293B',
+  },
+  hospitalLocation: {
+    fontSize: 14,
+    color: '#64748B',
+    marginTop: 4,
+  },
+  ratingContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginTop: 8,
+  },
+  ratingText: {
+    marginLeft: 4,
+    fontSize: 14,
+    color: '#475569',
+  },
+  bookButton: {
+    backgroundColor: '#3B82F6',
+    paddingVertical: 10,
+    paddingHorizontal: 20,
+    borderRadius: 8,
+  },
+  bookButtonText: {
+    color: '#FFFFFF',
+    fontSize: 16,
+    fontWeight: 'bold',
+  },
+});
+
+export default UserScreen;
