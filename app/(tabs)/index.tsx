@@ -1,6 +1,9 @@
-import React from 'react';
-import { View, Text, StyleSheet, SafeAreaView, StatusBar, TextInput, TouchableOpacity, FlatList } from 'react-native';
+import React, { useState, useCallback } from 'react';
+import { View, Text, StyleSheet, SafeAreaView, StatusBar, TextInput, TouchableOpacity, FlatList, ActivityIndicator } from 'react-native';
 import { IconSymbol } from '@/components/ui/icon-symbol';
+import { useRouter, useFocusEffect } from 'expo-router';
+import { getUser } from '@/lib/auth';
+import { User } from '@/lib/schema';
 
 const hospitals = [
   { id: '1', name: 'City General Hospital', location: '123 Main St, Anytown', rating: 4.5 },
@@ -8,7 +11,9 @@ const hospitals = [
   { id: '3', name: 'Evergreen Health', location: '789 Pine Ln, Anytown', rating: 4.2 },
 ];
 
-const UserScreen = () => {
+const PatientDashboard = () => {
+  const router = useRouter();
+
   const renderItem = ({ item }) => (
     <View style={styles.hospitalCard}>
       <View style={styles.hospitalInfo}>
@@ -29,7 +34,12 @@ const UserScreen = () => {
     <SafeAreaView style={styles.safeArea}>
       <StatusBar barStyle="dark-content" />
       <View style={styles.container}>
-        <Text style={styles.headerTitle}>Find a Hospital</Text>
+        <View style={styles.headerContainer}>
+          <Text style={styles.headerTitle}>Find a Hospital</Text>
+          <TouchableOpacity style={styles.bookAppointmentButton} onPress={() => router.push('/book-appointment')}>
+            <Text style={styles.bookAppointmentButtonText}>Book Appointment</Text>
+          </TouchableOpacity>
+        </View>
         <View style={styles.searchContainer}>
           <IconSymbol name="magnifyingglass" size={20} color="#9CA3AF" style={styles.searchIcon} />
           <TextInput
@@ -50,6 +60,64 @@ const UserScreen = () => {
   );
 };
 
+const DoctorDashboard = () => {
+  return (
+    <View style={styles.container}>
+      <Text style={styles.headerTitle}>Doctor Dashboard</Text>
+      {/* Doctor specific content goes here */}
+    </View>
+  );
+};
+
+const AdminDashboard = () => {
+  return (
+    <View style={styles.container}>
+      <Text style={styles.headerTitle}>Admin Dashboard</Text>
+      {/* Admin specific content goes here */}
+    </View>
+  );
+};
+
+export default function IndexScreen() {
+  const [user, setUser] = useState<User | null>(null);
+  const [loadingUser, setLoadingUser] = useState(true);
+
+  useFocusEffect(
+    useCallback(() => {
+      const fetchUser = async () => {
+        const loggedInUser = await getUser();
+        setUser(loggedInUser);
+        setLoadingUser(false);
+      };
+      fetchUser();
+    }, [])
+  );
+
+  if (loadingUser) {
+    return (
+      <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
+        <ActivityIndicator size="large" />
+      </View>
+    );
+  }
+
+  if (!user) {
+    // This case should ideally be handled by _layout.tsx redirect
+    return <Text>Error: User not found.</Text>;
+  }
+
+  switch (user.role?.toLowerCase()) {
+    case 'patient':
+      return <PatientDashboard />;
+    case 'doctor':
+      return <DoctorDashboard />;
+    case 'admin':
+      return <AdminDashboard />;
+    default:
+      return <Text>Unknown Role</Text>;
+  }
+}
+
 const styles = StyleSheet.create({
   safeArea: {
     flex: 1,
@@ -60,11 +128,27 @@ const styles = StyleSheet.create({
     padding: 20,
     paddingTop: 50, // Increased top padding
   },
+  headerContainer: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: 20,
+  },
   headerTitle: {
     fontSize: 28,
     fontWeight: 'bold',
     color: '#1E293B',
-    marginBottom: 20,
+  },
+  bookAppointmentButton: {
+    backgroundColor: '#3B82F6',
+    paddingVertical: 8,
+    paddingHorizontal: 15,
+    borderRadius: 8,
+  },
+  bookAppointmentButtonText: {
+    color: '#FFFFFF',
+    fontSize: 14,
+    fontWeight: 'bold',
   },
   searchContainer: {
     flexDirection: 'row',
@@ -127,4 +211,4 @@ const styles = StyleSheet.create({
   },
 });
 
-export default UserScreen;
+// export default UserScreen;

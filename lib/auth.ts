@@ -1,60 +1,48 @@
-
 import * as SecureStore from 'expo-secure-store';
 import { Platform } from 'react-native';
+import { User } from './schema';
 
-const TOKEN_KEY = 'jwt_token';
-const ROLE_KEY = 'user_role';
+const USER_KEY = 'user';
 
-export const saveToken = async (token, role) => {
+export const saveUser = async (user: User) => {
   try {
+    const userString = JSON.stringify(user);
     if (Platform.OS === 'web') {
-      localStorage.setItem(TOKEN_KEY, token);
-      localStorage.setItem(ROLE_KEY, role);
+      localStorage.setItem(USER_KEY, userString);
     } else {
-      await SecureStore.setItemAsync(TOKEN_KEY, token);
-      await SecureStore.setItemAsync(ROLE_KEY, role);
+      await SecureStore.setItemAsync(USER_KEY, userString);
     }
   } catch (error) {
-    console.error('Error saving token:', error);
+    console.error('Error saving user:', error);
   }
 };
 
-export const getToken = async () => {
+export const getUser = async (): Promise<User | null> => {
   try {
+    let userString: string | null = null;
     if (Platform.OS === 'web') {
-      return localStorage.getItem(TOKEN_KEY);
+      userString = localStorage.getItem(USER_KEY);
     } else {
-      return await SecureStore.getItemAsync(TOKEN_KEY);
+      userString = await SecureStore.getItemAsync(USER_KEY);
     }
+    if (userString) {
+      return JSON.parse(userString) as User;
+    }
+    return null;
   } catch (error) {
-    console.error('Error getting token:', error);
+    console.error('Error getting user:', error);
     return null;
   }
 };
 
-export const getRole = async () => {
+export const deleteUser = async () => {
   try {
     if (Platform.OS === 'web') {
-      return localStorage.getItem(ROLE_KEY);
+      localStorage.removeItem(USER_KEY);
     } else {
-      return await SecureStore.getItemAsync(ROLE_KEY);
+      await SecureStore.deleteItemAsync(USER_KEY);
     }
   } catch (error) {
-    console.error('Error getting role:', error);
-    return null;
-  }
-};
-
-export const deleteToken = async () => {
-  try {
-    if (Platform.OS === 'web') {
-      localStorage.removeItem(TOKEN_KEY);
-      localStorage.removeItem(ROLE_KEY);
-    } else {
-      await SecureStore.deleteItemAsync(TOKEN_KEY);
-      await SecureStore.deleteItemAsync(ROLE_KEY);
-    }
-  } catch (error) {
-    console.error('Error deleting token:', error);
+    console.error('Error deleting user:', error);
   }
 };

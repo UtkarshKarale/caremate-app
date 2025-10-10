@@ -1,80 +1,64 @@
+import React, { useState, useCallback } from 'react';
+import { View, Text, ActivityIndicator, SafeAreaView, StyleSheet } from 'react-native';
+import { getUser } from '@/lib/auth';
+import { User } from '@/lib/schema';
+import { useFocusEffect } from 'expo-router';
+import PatientAppointments from '@/app/my-appointments/patient-view';
+import DoctorAppointments from '@/app/my-appointments/doctor-view';
 
-import React from 'react';
-import { View, Text, FlatList, StyleSheet, SafeAreaView } from 'react-native';
+export default function AppointmentsScreen() {
+  const [user, setUser] = useState<User | null>(null);
+  const [loadingUser, setLoadingUser] = useState(true);
 
-const appointments = [
-  { id: '1', doctor: 'Dr. Smith', hospital: 'City General Hospital', date: '2025-10-20', time: '10:00 AM' },
-  { id: '2', doctor: 'Dr. Jones', hospital: 'Sunrise Medical Center', date: '2025-11-15', time: '02:30 PM' },
-];
-
-const MyAppointmentsScreen = () => {
-  const renderItem = ({ item }) => (
-    <View style={styles.itemContainer}>
-      <Text style={styles.doctorText}>{item.doctor}</Text>
-      <Text style={styles.hospitalText}>{item.hospital}</Text>
-      <Text style={styles.dateText}>{item.date} at {item.time}</Text>
-    </View>
+  useFocusEffect(
+    useCallback(() => {
+      const fetchUser = async () => {
+        const loggedInUser = await getUser();
+        setUser(loggedInUser);
+        setLoadingUser(false);
+      };
+      fetchUser();
+    }, [])
   );
 
-  return (
-    <SafeAreaView style={styles.safeArea}>
-      <View style={styles.container}>
-        <Text style={styles.headerTitle}>My Appointments</Text>
-        <FlatList
-          data={appointments}
-          renderItem={renderItem}
-          keyExtractor={(item) => item.id}
-          contentContainerStyle={styles.listContainer}
-        />
-      </View>
-    </SafeAreaView>
-  );
-};
+  if (loadingUser) {
+    return (
+      <SafeAreaView style={styles.safeArea}>
+        <View style={styles.loadingContainer}>
+          <ActivityIndicator size="large" color="#3B82F6" />
+          <Text style={styles.loadingText}>Loading user data...</Text>
+        </View>
+      </SafeAreaView>
+    );
+  }
+
+  if (!user) {
+    return <Text>Error: User not found.</Text>;
+  }
+
+  switch (user.role?.toLowerCase()) {
+    case 'patient':
+      return <PatientAppointments />;
+    case 'doctor':
+      return <DoctorAppointments />;
+    default:
+      return <Text>Unknown Role</Text>;
+  }
+}
 
 const styles = StyleSheet.create({
   safeArea: {
     flex: 1,
     backgroundColor: '#F0F4F8',
   },
-  container: {
+  loadingContainer: {
     flex: 1,
-    padding: 20,
+    justifyContent: 'center',
+    alignItems: 'center',
   },
-  headerTitle: {
-    fontSize: 28,
-    fontWeight: 'bold',
-    color: '#1E293B',
-    marginBottom: 20,
-  },
-  listContainer: {
-    paddingTop: 10,
-  },
-  itemContainer: {
-    backgroundColor: '#FFFFFF',
-    borderRadius: 8,
-    padding: 16,
-    marginBottom: 12,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.05,
-    shadowRadius: 4,
-    elevation: 3,
-  },
-  doctorText: {
-    fontSize: 18,
-    fontWeight: 'bold',
-    color: '#334155',
-  },
-  hospitalText: {
+  loadingText: {
+    marginTop: 10,
     fontSize: 16,
     color: '#64748B',
-    marginTop: 4,
-  },
-  dateText: {
-    fontSize: 14,
-    color: '#047857',
-    marginTop: 8,
   },
 });
-
-export default MyAppointmentsScreen;

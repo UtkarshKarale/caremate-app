@@ -3,7 +3,7 @@ import { View, Text, TextInput, TouchableOpacity, Alert, Image, KeyboardAvoiding
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useRouter } from 'expo-router';
 import { login } from '@/lib/api';
-import { saveToken } from '@/lib/auth';
+import { saveUser } from '@/lib/auth';
 import { LinearGradient } from 'expo-linear-gradient';
 
 const LoginScreen = () => {
@@ -13,10 +13,10 @@ const LoginScreen = () => {
 
   const handleLogin = async () => {
     try {
-      const { token, role } = await login(email, password);
-      await saveToken(token, role);
+      const { user } = await login(email, password);
+      await saveUser(user);
       router.push('/(tabs)');
-    } catch {
+    } catch (error) {
       Alert.alert('Login Failed', 'Invalid email or password. Please try again.');
     }
   };

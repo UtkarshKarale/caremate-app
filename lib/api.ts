@@ -1,101 +1,103 @@
+import { users, doctors, appointments, prescriptions, reports } from './data';
+import { User, Prescription, Report, Appointment } from './schema';
 
-import axios from 'axios';
-import { getToken } from './auth';
-
-const API_URL = 'http://192.168.1.104:8888/api/user'; // Replace with your actual backend URL
-
-const api = axios.create({
-  baseURL: API_URL,
-});
-
-api.interceptors.request.use(async (config) => {
-  const token = await getToken();
-  if (token) {
-    config.headers.Authorization = `Bearer ${token}`;
-  }
-  return config;
-});
-
-export const login = async (email: string, password: string) => {
-  try {
-    const response = await api.post(`/login`, { email, password });
-      return { role: response.data.role, token: response.data.token };
-  } catch (error) {
-    // @ts-ignore
-      console.error('Login error:', error.response?.data || error.message);
-    throw error;
-  }
+export const login = async (email: string, password: string): Promise<{ token: string, role: string, user: User }> => {
+  return new Promise((resolve, reject) => {
+    setTimeout(() => {
+      const user = users.find(u => u.email === email
+      );
+      if (user) {
+        // In a real app, you'd also check the password.
+        // Here, we'll just use the user ID as a mock token.
+        resolve({ token: user.id, role: user.role, user });
+      } else {
+        reject(new Error('Invalid email or password'));
+      }
+    }, 500);
+  });
 };
 
-export const register = async (userData) => {
-  try {
-    const response = await api.post(`/register`, userData);
-    return response.data;
-  } catch (error) {
-    // @ts-ignore
-      console.error('Signup error:', error.response?.data || error.message);
-    throw error;
-  }
+export const getAppointments = async (userId: string) => {
+    return new Promise((resolve) => {
+        setTimeout(() => {
+            const userAppointments = appointments.filter(a => a.patientId === userId);
+            resolve(userAppointments);
+        }, 500);
+    });
 };
 
-export const updateUser = async (id, userData) => {
-  try {
-    const response = await api.put(`/${id}/update/allfields`, userData);
-    return response.data;
-  } catch (error) {
-    console.error('Update user error:', error.response?.data || error.message);
-    throw error;
-  }
+export const getDoctorAppointments = async (doctorId: string) => {
+    return new Promise((resolve) => {
+        setTimeout(() => {
+            const doctorAppointments = appointments.filter(a => a.doctorId === doctorId);
+            resolve(doctorAppointments);
+        }, 500);
+    });
 };
 
-export const findUserById = async (id: string | undefined) => {
-  try {
-    const response = await api.get(`/${id}/lookup`);
-    return response.data;
-  } catch (error) {
-    // @ts-ignore
-
-      console.error('Find user by id error:', error.response?.data || error.message);
-    throw error;
-  }
+export const getAllDoctors = async () => {
+    return new Promise((resolve) => {
+        setTimeout(() => {
+            resolve(doctors);
+        }, 500);
+    });
 };
 
-export const getAllUsers = async () => {
-  try {
-    const response = await api.get(`/lookup/all`);
-    return response.data;
-  } catch (error) {
-    console.error('Get all users error:', error.response?.data || error.message);
-    throw error;
-  }
+export const getUser = async (userId: string) => {
+    return new Promise((resolve) => {
+        setTimeout(() => {
+            const user = users.find(u => u.id === userId);
+            resolve(user);
+        }, 500);
+    });
 };
 
-export const getAllActiveUsers = async () => {
-  try {
-    const response = await api.get(`/lookup/all/active`);
-    return response.data;
-  } catch (error) {
-    console.error('Get all active users error:', error.response?.data || error.message);
-    throw error;
-  }
+export const getPrescriptionsForPatient = async (patientId: string): Promise<Prescription[]> => {
+  return new Promise((resolve) => {
+    setTimeout(() => {
+      const patientPrescriptions = prescriptions.filter(p => p.patientId === patientId);
+      resolve(patientPrescriptions);
+    }, 500);
+  });
 };
 
-export const forgotPassword = async (email) => {
-  try {
-    const response = await api.put(`/forgot-password`, null, { params: { email } });
-    return response.data;
-  } catch (error) {
-    console.error('Forgot password error:', error.response?.data || error.message);
-    throw error;
-  }
+export const getReportsForPatient = async (patientId: string): Promise<Report[]> => {
+  return new Promise((resolve) => {
+    setTimeout(() => {
+      const patientReports = reports.filter(r => r.patientId === patientId);
+      resolve(patientReports);
+    }, 500);
+  });
 };
 
-export const resetPassword = async (data) => {
-  try {
-    const response = await api.put(`/reset-password`, data);
-    return response.data;
-  } catch (error) {
-    console.error('Reset password error:', error.response?.data || error.message);
-    throw error;
-  }
+export const addPrescription = async (prescription: Prescription): Promise<Prescription> => {
+  return new Promise((resolve) => {
+    setTimeout(() => {
+      prescriptions.push(prescription);
+      resolve(prescription);
+    }, 500);
+  });
+};
+
+export const addReport = async (report: Report): Promise<Report> => {
+  return new Promise((resolve) => {
+    setTimeout(() => {
+      reports.push(report);
+      resolve(report);
+    }, 500);
+  });
+};
+
+export const updateAppointmentStatus = async (appointmentId: string, status: Appointment['status']): Promise<Appointment> => {
+  return new Promise((resolve, reject) => {
+    setTimeout(() => {
+      const appointmentIndex = appointments.findIndex(a => a.id === appointmentId);
+      if (appointmentIndex > -1) {
+        appointments[appointmentIndex].status = status;
+        resolve(appointments[appointmentIndex]);
+      } else {
+        reject(new Error('Appointment not found'));
+      }
+    }, 500);
+  });
 };
