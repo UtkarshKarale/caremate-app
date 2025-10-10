@@ -40,7 +40,7 @@ const DoctorScreen = () => {
         <Text style={styles.dateText}>{item.date} at {item.time}</Text>
         <Text style={styles.statusText}>Status: {item.status}</Text>
       </View>
-      <TouchableOpacity style={styles.manageButton} onPress={() => router.push(`/doctor/manage-appointment?appointmentId=${item.id}`)}>
+      <TouchableOpacity style={styles.manageButton} onPress={() => router.push(`/_doctor/manage-appointment?appointmentId=${item.id}`)}>
         <Text style={styles.manageButtonText}>Manage</Text>
       </TouchableOpacity>
     </View>

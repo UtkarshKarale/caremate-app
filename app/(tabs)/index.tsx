@@ -4,6 +4,8 @@ import { IconSymbol } from '@/components/ui/icon-symbol';
 import { useRouter, useFocusEffect } from 'expo-router';
 import { getUser } from '@/lib/auth';
 import { User } from '@/lib/schema';
+import DoctorScreen from "@/app/_doctor/doctor";
+import AdminScreen from "@/app/admin/admin";
 
 const hospitals = [
   { id: '1', name: 'City General Hospital', location: '123 Main St, Anytown', rating: 4.5 },
@@ -61,20 +63,26 @@ const PatientDashboard = () => {
 };
 
 const DoctorDashboard = () => {
+  const router = useRouter();
   return (
-    <View style={styles.container}>
-      <Text style={styles.headerTitle}>Doctor Dashboard</Text>
-      {/* Doctor specific content goes here */}
-    </View>
+    <SafeAreaView style={styles.safeArea}>
+      <View style={styles.container}>
+       <DoctorScreen/>
+      </View>
+    </SafeAreaView>
   );
 };
 
 const AdminDashboard = () => {
   return (
-    <View style={styles.container}>
-      <Text style={styles.headerTitle}>Admin Dashboard</Text>
-      {/* Admin specific content goes here */}
-    </View>
+    <SafeAreaView style={styles.safeArea}>
+      <View style={styles.container}>
+        <Text style={styles.headerTitle}>Admin Dashboard</Text>
+        <Text style={styles.dashboardText}>Welcome, Admin!</Text>
+        <Text style={styles.dashboardText}>Overview of hospital operations and user management.</Text>
+        {/* More admin specific content */}
+      </View>
+    </SafeAreaView>
   );
 };
 
@@ -112,7 +120,7 @@ export default function IndexScreen() {
     case 'doctor':
       return <DoctorDashboard />;
     case 'admin':
-      return <AdminDashboard />;
+      return <AdminScreen />;
     default:
       return <Text>Unknown Role</Text>;
   }

@@ -5,6 +5,7 @@ import { User } from '@/lib/schema';
 import { useFocusEffect } from 'expo-router';
 import PatientAppointments from '@/app/my-appointments/patient-view';
 import DoctorAppointments from '@/app/my-appointments/doctor-view';
+import ManageAppointmentScreen from "@/app/_doctor/manage-appointment";
 
 export default function AppointmentsScreen() {
   const [user, setUser] = useState<User | null>(null);
@@ -40,9 +41,9 @@ export default function AppointmentsScreen() {
     case 'patient':
       return <PatientAppointments />;
     case 'doctor':
-      return <DoctorAppointments />;
+      return <AppointmentsScreen />;
     default:
-      return <Text>Unknown Role</Text>;
+      return <AppointmentsScreen />;
   }
 }
 
