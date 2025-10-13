@@ -3,7 +3,7 @@ import { Box, Text, Input, VStack, HStack, Pressable, Icon, Button, Image, Check
 import { MaterialIcons } from '@expo/vector-icons';
 
 export default function LoginScreen({ navigation }: any) {
-    const [email, setEmail] = useState('');
+    const [email, setEmail] = useState<string | null>(null);
     const [password, setPassword] = useState('');
     const [showPassword, setShowPassword] = useState(false);
     const [rememberMe, setRememberMe] = useState(false);
@@ -35,7 +35,7 @@ export default function LoginScreen({ navigation }: any) {
                         <VStack space={2}>
                             <Text fontSize="sm" fontWeight="semibold" color="gray.700">Email Address</Text>
                             <Input
-                                value={email}
+                                value={email ?? ""}
                                 onChangeText={setEmail}
                                 placeholder="Enter your email"
                                 fontSize="md"

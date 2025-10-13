@@ -30,6 +30,15 @@ export default function RoleSelectionScreen({ navigation }: any) {
             color: 'purple.600',
             bgColor: 'purple.100',
             route: 'ReceptionistTabs'
+        },
+        {
+            id: 'admin',
+            title: 'admin',
+            description: 'Manage appointments, check-ins',
+            icon: 'desktop-windows',
+            color: 'purple.600',
+            bgColor: 'purple.100',
+            route: 'ReceptionistTabs'
         }
     ];
 

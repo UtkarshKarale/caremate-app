@@ -39,13 +39,13 @@ export default function TimeSlotSelectionScreen({ navigation, route }: any) {
                 {/* Doctor Info */}
                 <Box bg="white" borderRadius="xl" shadow={1} p={4} mb={4}>
                     <HStack space={3} alignItems="center">
-                        <Avatar size="md" source={{ uri: doctor.image }} />
+                        <Avatar size="md" source={{ uri: doctor?.image }} />
                         <VStack flex={1}>
-                            <Text fontWeight="bold" fontSize="md">{doctor.name}</Text>
-                            <Text fontSize="sm" color="gray.600">{doctor.specialty}</Text>
+                            <Text fontWeight="bold" fontSize="md">{doctor?.name}</Text>
+                            <Text fontSize="sm" color="gray.600">{doctor?.specialty}</Text>
                             <HStack alignItems="center" space={1}>
                                 <Icon as={MaterialIcons} name="star" size={4} color="yellow.400" />
-                                <Text fontSize="sm">{doctor.rating}</Text>
+                                <Text fontSize="sm">{doctor?.rating}</Text>
                             </HStack>
                         </VStack>
                     </HStack>
@@ -103,7 +103,7 @@ export default function TimeSlotSelectionScreen({ navigation, route }: any) {
                 <Box mb={4}>
                     <Text fontSize="lg" fontWeight="bold" mb={3}>Available Time Slots</Text>
                     <HStack flexWrap="wrap" space={3}>
-                        {doctor.availableSlots.map((slot: any, idx: any) => (
+                        {doctor?.availableSlots.map((slot: any, idx: any) => (
                             <Pressable
                                 key={idx}
                                 onPress={() => setSelectedTime(slot)}
@@ -155,7 +155,7 @@ export default function TimeSlotSelectionScreen({ navigation, route }: any) {
                     borderRadius="xl"
                     py={4}
                     mb={4}
-                    isDisabled={!selectedTime}
+                    isDisabled={false}
                     onPress={handleConfirm}
                     _pressed={{ bg: 'blue.700' }}
                 >
