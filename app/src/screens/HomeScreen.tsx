@@ -2,20 +2,18 @@ import React from 'react';
 import { Box, Text, HStack, VStack, ScrollView, Pressable, Badge, Icon } from 'native-base';
 import { MaterialIcons } from '@expo/vector-icons';
 import { upcomingAppointments } from '@/app/src/data/doctor';
+import {useAuth} from "@/app/src/screens/context/AuthContext";
 
 export default function HomeScreen({ navigation }: any) {
+    const { user } = useAuth();
+
     return (
         <ScrollView flex={1} bg="gray.50">
             {/* Header */}
             <Box bg="blue.600" pb={6} pt={4} px={4} borderBottomLeftRadius={24} borderBottomRightRadius={24}>
                 <HStack justifyContent="space-between" alignItems="center" mb={6}>
                     <Box>
-                        <HStack space={2} mb={4}>
-                            <Badge bg="white" _text={{ color: 'blue.600', fontWeight: 'bold', fontSize: 'xs' }} borderRadius="full" px={3} py={1}>Patient</Badge>
-                            <Badge bg="blue.500" _text={{ color: 'white', fontSize: 'xs' }} borderRadius="full" px={3} py={1}>Doctor</Badge>
-                            <Badge bg="blue.500" _text={{ color: 'white', fontSize: 'xs' }} borderRadius="full" px={3} py={1}>Admin</Badge>
-                        </HStack>
-                        <Text fontSize="2xl" fontWeight="bold" color="white">Hello, Alex</Text>
+                        <Text fontSize="2xl" fontWeight="bold" color="white">Hello, {user?.fullname}</Text>
                         <Text fontSize="sm" color="blue.100">Welcome back!</Text>
                     </Box>
                     <HStack space={2}>

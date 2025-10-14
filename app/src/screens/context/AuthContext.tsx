@@ -53,20 +53,26 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
             setIsLoading(true);
 
             // Backend API call
-            const response = await axios.post('https://your-backend-api.com/auth/login', {
+            const response = await axios.post('http://192.168.0.106:8888/api/user/login', {
                 email,
                 password,
             });
 
-            const { user: userData, token } = response.data;
+            const { role, token, user: userData } = response.data;
 
-            await AsyncStorage.setItem('user', JSON.stringify(userData));
+            const user = {
+                ...userData,
+                role,
+            };
+
+            await AsyncStorage.setItem('user', JSON.stringify(user));
             await AsyncStorage.setItem('token', token);
 
             axios.defaults.headers.common['Authorization'] = `Bearer ${token}`;
-            setUser(userData);
+            setUser(user);
 
         } catch (error: any) {
+
             console.error('Login error:', error);
             setError(error.response?.data?.message || 'Login failed');
             throw error;

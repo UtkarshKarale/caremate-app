@@ -1,6 +1,8 @@
+import { register } from '../../../../lib/api';
 import React, { useState } from 'react';
-import { Box, Text, Input, VStack, HStack, Pressable, Icon, Button, Radio, ScrollView } from 'native-base';
+import { Box, Text, VStack, HStack, Pressable, Icon, Button, ScrollView } from 'native-base';
 import { MaterialIcons } from '@expo/vector-icons';
+import { TextInput, StyleSheet } from 'react-native';
 
 export default function SignupScreen({ navigation }: any) {
     const [fullName, setFullName] = useState('');
@@ -10,11 +12,31 @@ export default function SignupScreen({ navigation }: any) {
     const [confirmPassword, setConfirmPassword] = useState('');
     const [showPassword, setShowPassword] = useState(false);
     const [showConfirmPassword, setShowConfirmPassword] = useState(false);
-    const [userType, setUserType] = useState('patient');
 
-    const handleSignup = () => {
-        // Add registration logic here
-        navigation.replace('RoleSelection');
+    const handleSignup = async () => {
+        if (password !== confirmPassword) {
+            // @ts-ignore
+            alert('Passwords do not match.');
+            return;
+        }
+
+        const userData = {
+            fullName,
+            email,
+            mobile : phone,
+            password,
+            role: 'PATIENT',
+        };
+
+        try {
+            await register(userData);
+            // @ts-ignore
+            alert('Registration successful! Please login.');
+            navigation.navigate('Login');
+        } catch (error) {
+            // @ts-ignore
+            alert('Registration failed. Please try again.');
+        }
     };
 
     return (
@@ -35,150 +57,93 @@ export default function SignupScreen({ navigation }: any) {
             <ScrollView flex={1} px={6} showsVerticalScrollIndicator={false}>
                 <Box bg="white" borderRadius="2xl" shadow={6} p={6} mt={-6} mb={6}>
                     <VStack space={4}>
-                        {/* User Type Selection */}
-                        <VStack space={2}>
-                            <Text fontSize="sm" fontWeight="semibold" color="gray.700">I am a</Text>
-                            <Radio.Group name={"bac"} value={userType} onChange={setUserType}>
-                                <HStack space={4}>
-                                    <Radio value="patient" colorScheme="blue">
-                                        <Text fontSize="sm" ml={2}>Patient</Text>
-                                    </Radio>
-                                    <Radio value="doctor" colorScheme="blue">
-                                        <Text fontSize="sm" ml={2}>Doctor</Text>
-                                    </Radio>
-                                    <Radio value="receptionist" colorScheme="blue">
-                                        <Text fontSize="sm" ml={2}>Receptionist</Text>
-                                    </Radio>
-                                </HStack>
-                            </Radio.Group>
-                        </VStack>
-
                         {/* Full Name */}
                         <VStack space={2}>
                             <Text fontSize="sm" fontWeight="semibold" color="gray.700">Full Name</Text>
-                            <Input
-                                value={fullName}
-                                onChangeText={setFullName}
-                                placeholder="Enter your full name"
-                                fontSize="md"
-                                borderRadius="xl"
-                                py={3}
-                                px={4}
-                                bg="gray.50"
-                                borderWidth={1}
-                                borderColor="gray.200"
-                                _focus={{ borderColor: 'blue.600', bg: 'white' }}
-                                InputLeftElement={
-                                    <Icon as={MaterialIcons} name="person" size={5} color="gray.400" ml={4} />
-                                }
-                            />
+                            <HStack bg="gray.50" borderWidth={1} borderColor="gray.200" borderRadius="xl" alignItems="center" >
+                                <Icon as={MaterialIcons} name="person" size={5} color="gray.400" ml={4} />
+                                <TextInput
+                                    style={styles.input}
+                                    value={fullName}
+                                    onChangeText={setFullName}
+                                    placeholder="Enter your full name"
+                                />
+                            </HStack>
                         </VStack>
 
                         {/* Email */}
                         <VStack space={2}>
                             <Text fontSize="sm" fontWeight="semibold" color="gray.700">Email Address</Text>
-                            <Input
-                                value={email}
-                                onChangeText={setEmail}
-                                placeholder="Enter your email"
-                                fontSize="md"
-                                borderRadius="xl"
-                                py={3}
-                                px={4}
-                                bg="gray.50"
-                                borderWidth={1}
-                                borderColor="gray.200"
-                                _focus={{ borderColor: 'blue.600', bg: 'white' }}
-                                InputLeftElement={
-                                    <Icon as={MaterialIcons} name="email" size={5} color="gray.400" ml={4} />
-                                }
-                            />
+                            <HStack bg="gray.50" borderWidth={1} borderColor="gray.200" borderRadius="xl" alignItems="center" >
+                                <Icon as={MaterialIcons} name="email" size={5} color="gray.400" ml={4} />
+                                <TextInput
+                                    style={styles.input}
+                                    value={email}
+                                    onChangeText={setEmail}
+                                    placeholder="Enter your email"
+                                />
+                            </HStack>
                         </VStack>
 
                         {/* Phone */}
                         <VStack space={2}>
                             <Text fontSize="sm" fontWeight="semibold" color="gray.700">Phone Number</Text>
-                            <Input
-                                value={phone}
-                                onChangeText={setPhone}
-                                placeholder="Enter your phone number"
-                                keyboardType="phone-pad"
-                                fontSize="md"
-                                borderRadius="xl"
-                                py={3}
-                                px={4}
-                                bg="gray.50"
-                                borderWidth={1}
-                                borderColor="gray.200"
-                                _focus={{ borderColor: 'blue.600', bg: 'white' }}
-                                InputLeftElement={
-                                    <Icon as={MaterialIcons} name="phone" size={5} color="gray.400" ml={4} />
-                                }
-                            />
+                            <HStack bg="gray.50" borderWidth={1} borderColor="gray.200" borderRadius="xl" alignItems="center" >
+                                <Icon as={MaterialIcons} name="phone" size={5} color="gray.400" ml={4} />
+                                <TextInput
+                                    style={styles.input}
+                                    value={phone}
+                                    onChangeText={setPhone}
+                                    placeholder="Enter your phone number"
+                                    keyboardType="phone-pad"
+                                />
+                            </HStack>
                         </VStack>
 
                         {/* Password */}
                         <VStack space={2}>
                             <Text fontSize="sm" fontWeight="semibold" color="gray.700">Password</Text>
-                            <Input
-                                value={password}
-                                onChangeText={setPassword}
-                                placeholder="Create a password"
-                                type={showPassword ? 'text' : 'password'}
-                                fontSize="md"
-                                borderRadius="xl"
-                                py={3}
-                                px={4}
-                                bg="gray.50"
-                                borderWidth={1}
-                                borderColor="gray.200"
-                                _focus={{ borderColor: 'blue.600', bg: 'white' }}
-                                InputLeftElement={
-                                    <Icon as={MaterialIcons} name="lock" size={5} color="gray.400" ml={4} />
-                                }
-                                InputRightElement={
-                                    <Pressable onPress={() => setShowPassword(!showPassword)} mr={4}>
-                                        <Icon
-                                            as={MaterialIcons}
-                                            name={showPassword ? 'visibility' : 'visibility-off'}
-                                            size={5}
-                                            color="gray.400"
-                                        />
-                                    </Pressable>
-                                }
-                            />
+                            <HStack bg="gray.50" borderWidth={1} borderColor="gray.200" borderRadius="xl" alignItems="center" >
+                                <Icon as={MaterialIcons} name="lock" size={5} color="gray.400" ml={4} />
+                                <TextInput
+                                    style={styles.input}
+                                    value={password}
+                                    onChangeText={setPassword}
+                                    placeholder="Create a password"
+                                    secureTextEntry={!showPassword}
+                                />
+                                <Pressable onPress={() => setShowPassword(!showPassword)} mr={4}>
+                                    <Icon
+                                        as={MaterialIcons}
+                                        name={showPassword ? 'visibility' : 'visibility-off'}
+                                        size={5}
+                                        color="gray.400"
+                                    />
+                                </Pressable>
+                            </HStack>
                         </VStack>
 
                         {/* Confirm Password */}
                         <VStack space={2}>
                             <Text fontSize="sm" fontWeight="semibold" color="gray.700">Confirm Password</Text>
-                            <Input
-                                value={confirmPassword}
-                                onChangeText={setConfirmPassword}
-                                placeholder="Confirm your password"
-                                type={showConfirmPassword ? 'text' : 'password'}
-                                fontSize="md"
-                                borderRadius="xl"
-                                py={3}
-                                px={4}
-                                bg="gray.50"
-                                borderWidth={1}
-                                borderColor="gray.200"
-                                _focus={{ borderColor: 'blue.600', bg: 'white' }}
-                                InputLeftElement={
-                                    <Icon as={MaterialIcons} name="lock" size={5} color="gray.400" ml={4} />
-                                }
-                                InputRightElement={
-                                    <Pressable onPress={() => setShowConfirmPassword(!showConfirmPassword)} mr={4}>
-                                        <Icon
-                                            as={MaterialIcons}
-                                            name={showConfirmPassword ? 'visibility' : 'visibility-off'}
-                                            size={5}
-                                            color="gray.400"
-                                        />
-                                    </Pressable>
-                                }
-                            />
+                            <HStack bg="gray.50" borderWidth={1} borderColor="gray.200" borderRadius="xl" alignItems="center" >
+                                <Icon as={MaterialIcons} name="lock" size={5} color="gray.400" ml={4} />
+                                <TextInput
+                                    style={styles.input}
+                                    value={confirmPassword}
+                                    onChangeText={setConfirmPassword}
+                                    placeholder="Confirm your password"
+                                    secureTextEntry={!showConfirmPassword}
+                                />
+                                <Pressable onPress={() => setShowConfirmPassword(!showConfirmPassword)} mr={4}>
+                                    <Icon
+                                        as={MaterialIcons}
+                                        name={showConfirmPassword ? 'visibility' : 'visibility-off'}
+                                        size={5}
+                                        color="gray.400"
+                                    />
+                                </Pressable>
+                            </HStack>
                         </VStack>
 
                         {/* Terms & Conditions */}
@@ -216,3 +181,13 @@ export default function SignupScreen({ navigation }: any) {
         </Box>
     );
 }
+
+const styles = StyleSheet.create({
+    input: {
+        flex: 1,
+        fontSize: 16,
+        paddingVertical: 12,
+        paddingRight: 12,
+        color: '#2D3748',
+    },
+});

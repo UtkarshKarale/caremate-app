@@ -8,7 +8,6 @@ import { Icon, Box, Spinner, Text, VStack  } from 'native-base';
 // Auth Screens
 import LoginScreen from '@/app/src/screens/auth/LoginScreen';
 import SignupScreen from '@/app/src/screens/auth/SignupScreen';
-import RoleSelectionScreen from '@/app/src/screens/auth/RoleSelectionScreen';
 import ReportsAnalyticsScreen from '@/app/src/screens/Admin/ReportsAnalyticsScreen';
 import AdminProfileScreen from '@/app/src/screens/Admin/AdminProfileScreen';
 
@@ -194,7 +193,7 @@ function ReceptionistTabNavigator() {
         >
             <Tab.Screen
                 name="ReceptionistHome"
-                component={HomeStack}
+                component={ReceptionistHomeScreen}
                 options={{
                     tabBarLabel: 'Home',
                     tabBarIcon: ({ color, size }) => (
@@ -318,7 +317,7 @@ export default function AppNavigator() {
     const { user, isLoading } = useAuth();
 
 
-    if (false) {
+    if (isLoading) {
         return (
             <Box flex={1} justifyContent="center" alignItems="center" bg="white">
                 <VStack space={4} alignItems="center">
@@ -337,25 +336,20 @@ export default function AppNavigator() {
                     <>
                         <Stack.Screen name="Login" component={LoginScreen} />
                         <Stack.Screen name="Signup" component={SignupScreen} />
-                        <Stack.Screen name="RoleSelection" component={RoleSelectionScreen} />
                     </>
                 ) : (
                     // ========== LOGGED IN - ROLE BASED ==========
                     <>
-                        {user?.role === 'patient' && (
+                        {user?.role.toLowerCase() === 'user' ? (
                             <Stack.Screen name="PatientApp" component={PatientTabNavigator} />
-                        )}
-
-                        {user?.role === 'doctor' && (
+                        ) : user?.role === 'doctor' ? (
                             <Stack.Screen name="DoctorApp" component={DoctorTabNavigator} />
-                        )}
-
-                        {user?.role === 'receptionist' && (
+                        ) : user?.role === 'receptionist' ? (
                             <Stack.Screen name="ReceptionistApp" component={ReceptionistTabNavigator} />
-                        )}
-
-                        {user?.role === 'admin' && (
+                        ) : user?.role.toLowerCase() === 'admin' ? (
                             <Stack.Screen name="AdminApp" component={AdminTabNavigator} />
+                        ) : (
+                            <Stack.Screen name="PatientApp" component={PatientTabNavigator} />
                         )}
                     </>
                 )}

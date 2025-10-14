@@ -1,18 +1,48 @@
-import React, { useState } from 'react';
-import { Box, Text, Input, VStack, HStack, Pressable, Icon, Button, Image, Checkbox } from 'native-base';
+import React, { useEffect, useState } from 'react';
+import { Box, Text, VStack, HStack, Pressable, Icon, Button, Checkbox } from 'native-base';
 import { MaterialIcons } from '@expo/vector-icons';
+import { TextInput, StyleSheet } from 'react-native';
+import { useAuth } from '../context/AuthContext';
 
 export default function LoginScreen({ navigation }: any) {
     const [email, setEmail] = useState<string | null>(null);
     const [password, setPassword] = useState('');
     const [showPassword, setShowPassword] = useState(false);
     const [rememberMe, setRememberMe] = useState(false);
+    const { login, user, error } = useAuth();
 
-    const handleLogin = () => {
-        // Add authentication logic here
-        // For now, navigate based on user type
-        navigation.replace('RoleSelection');
+    const handleLogin = async () => {
+        if (!email || !password) {
+            // @ts-ignore
+            alert('Please enter both email and password.');
+            return;
+        }
+        try {
+            await login(email, password);
+        } catch (error) {
+            // @ts-ignore
+            alert('Login failed. Please check your credentials.');
+        }
     };
+
+    useEffect(() => {
+        if (user) {
+            switch (user.role) {
+                case 'admin':
+                    navigation.navigate('Admin');
+                    break;
+                case 'doctor':
+                    navigation.navigate('Doctor');
+                    break;
+                case 'receptionist':
+                    navigation.navigate('Receptionist');
+                    break;
+                default:
+                    navigation.navigate('Home');
+                    break;
+            }
+        }
+    }, [user, navigation]);
 
     return (
         <Box flex={1} bg="white">
@@ -34,54 +64,38 @@ export default function LoginScreen({ navigation }: any) {
                         {/* Email Input */}
                         <VStack space={2}>
                             <Text fontSize="sm" fontWeight="semibold" color="gray.700">Email Address</Text>
-                            <Input
-                                value={email ?? ""}
-                                onChangeText={setEmail}
-                                placeholder="Enter your email"
-                                fontSize="md"
-                                borderRadius="xl"
-                                py={3}
-                                px={4}
-                                bg="gray.50"
-                                borderWidth={1}
-                                borderColor="gray.200"
-                                _focus={{ borderColor: 'blue.600', bg: 'white' }}
-                                InputLeftElement={
-                                    <Icon as={MaterialIcons} name="email" size={5} color="gray.400" ml={4} />
-                                }
-                            />
+                            <HStack bg="gray.50" borderWidth={1} borderColor="gray.200" borderRadius="xl" alignItems="center" >
+                                <Icon as={MaterialIcons} name="email" size={5} color="gray.400" ml={4} />
+                                <TextInput
+                                    style={styles.input}
+                                    value={email ?? ""}
+                                    onChangeText={setEmail}
+                                    placeholder="Enter your email"
+                                />
+                            </HStack>
                         </VStack>
 
                         {/* Password Input */}
                         <VStack space={2}>
                             <Text fontSize="sm" fontWeight="semibold" color="gray.700">Password</Text>
-                            <Input
-                                value={password}
-                                onChangeText={setPassword}
-                                placeholder="Enter your password"
-                                type={showPassword ? 'text' : 'password'}
-                                fontSize="md"
-                                borderRadius="xl"
-                                py={3}
-                                px={4}
-                                bg="gray.50"
-                                borderWidth={1}
-                                borderColor="gray.200"
-                                _focus={{ borderColor: 'blue.600', bg: 'white' }}
-                                InputLeftElement={
-                                    <Icon as={MaterialIcons} name="lock" size={5} color="gray.400" ml={4} />
-                                }
-                                InputRightElement={
-                                    <Pressable onPress={() => setShowPassword(!showPassword)} mr={4}>
-                                        <Icon
-                                            as={MaterialIcons}
-                                            name={showPassword ? 'visibility' : 'visibility-off'}
-                                            size={5}
-                                            color="gray.400"
-                                        />
-                                    </Pressable>
-                                }
-                            />
+                            <HStack bg="gray.50" borderWidth={1} borderColor="gray.200" borderRadius="xl" alignItems="center" >
+                                <Icon as={MaterialIcons} name="lock" size={5} color="gray.400" ml={4} />
+                                <TextInput
+                                    style={styles.input}
+                                    value={password}
+                                    onChangeText={setPassword}
+                                    placeholder="Enter your password"
+                                    secureTextEntry={!showPassword}
+                                />
+                                <Pressable onPress={() => setShowPassword(!showPassword)} mr={4}>
+                                    <Icon
+                                        as={MaterialIcons}
+                                        name={showPassword ? 'visibility' : 'visibility-off'}
+                                        size={5}
+                                        color="gray.400"
+                                    />
+                                </Pressable>
+                            </HStack>
                         </VStack>
 
                         {/* Remember Me & Forgot Password */}
@@ -139,7 +153,7 @@ export default function LoginScreen({ navigation }: any) {
 
                 {/* Sign Up Link */}
                 <HStack justifyContent="center" space={2} mt={4}>
-                    <Text color="gray.600">Don't have an account?</Text>
+                    <Text color="gray.600">Do not have an account?</Text>
                     <Pressable onPress={() => navigation.navigate('Signup')}>
                         <Text color="blue.600" fontWeight="bold">Sign Up</Text>
                     </Pressable>
@@ -148,3 +162,13 @@ export default function LoginScreen({ navigation }: any) {
         </Box>
     );
 }
+
+const styles = StyleSheet.create({
+    input: {
+        flex: 1,
+        fontSize: 16,
+        paddingVertical: 12,
+        paddingRight: 12,
+        color: '#2D3748',
+    },
+});

@@ -1,114 +1,138 @@
-import React, { useState } from 'react';
-import { Box, Text, HStack, VStack, ScrollView, Pressable, Icon, Avatar, Input, Badge } from 'native-base';
+import React from 'react';
+import { Box, Text, HStack, VStack, ScrollView, Pressable, Icon, Avatar } from 'native-base';
 import { MaterialIcons } from '@expo/vector-icons';
+import {useAuth} from "@/app/src/screens/context/AuthContext";
 
-const users = [
-    { id: '1', name: 'Dr. Sarah Johnson', role: 'Doctor', email: 'sarah@hospital.com', status: 'Active', avatar: 'https://images.unsplash.com/photo-1559839734-2b716b17f7d1?w=400' },
-    { id: '2', name: 'John Smith', role: 'Patient', email: 'john@email.com', status: 'Active', avatar: 'https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=400' },
-    { id: '3', name: 'Jessica Martinez', role: 'Receptionist', email: 'jessica@hospital.com', status: 'Active', avatar: 'https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?w=400' },
-    { id: '4', name: 'Michael Chen', role: 'Doctor', email: 'michael@hospital.com', status: 'Inactive', avatar: 'https://images.unsplash.com/photo-1612349317150-e413f6a5b16d?w=400' },
-];
 
-export default function UserManagementScreen({ navigation }: any) {
-    const [searchQuery, setSearchQuery] = useState('');
-    const [selectedFilter, setSelectedFilter] = useState('All');
-    const filters = ['All', 'Doctor', 'Patient', 'Receptionist', 'Admin'];
+export default function AdminProfileScreen({ navigation }: any) {
+    const { logout } = useAuth();
+
+    const menuItems = [
+        { id: '1', title: 'Edit Profile', icon: 'edit', color: 'blue.600', screen: 'EditAdminProfile' },
+        { id: '2', title: 'System Settings', icon: 'settings', color: 'purple.600', screen: 'SystemSettings' },
+        { id: '3', title: 'Security', icon: 'security', color: 'green.600', screen: 'SecuritySettings' },
+        { id: '4', title: 'Backup & Restore', icon: 'backup', color: 'orange.600', screen: 'BackupRestore' },
+        { id: '5', title: 'Activity Log', icon: 'history', color: 'blue.500', screen: 'ActivityLog' },
+        { id: '6', title: 'Notifications', icon: 'notifications', color: 'yellow.600', screen: 'NotificationSettings' },
+        { id: '7', title: 'Help & Support', icon: 'help', color: 'cyan.600', screen: 'HelpSupport' },
+        { id: '8', title: 'About System', icon: 'info', color: 'gray.600', screen: 'AboutSystem' },
+        { id: '9', title: 'Logout', icon: 'logout', color: 'red.600', action: 'logout' },
+    ];
+
+    const handleMenuPress = async (item: any) => {
+        if (item.action === 'logout') {
+            await logout();
+        } else if (item.screen) {
+            navigation.navigate(item.screen);
+        }
+    };
 
     return (
-        <Box flex={1} bg="gray.50">
+        <ScrollView flex={1} bg="gray.50">
             {/* Header */}
-            <Box bg="red.600" pb={6} pt={4} px={4} borderBottomLeftRadius={24} borderBottomRightRadius={24}>
-                <HStack alignItems="center" mb={3}>
-                    <Pressable mr={3} onPress={() => navigation.goBack()}>
-                        <Icon as={MaterialIcons} name="arrow-back" size={6} color="white" />
-                    </Pressable>
-                    <VStack flex={1}>
-                        <Text fontSize="2xl" fontWeight="bold" color="white">User Management</Text>
-                        <Text fontSize="sm" color="red.100">Manage all system users</Text>
-                    </VStack>
+            <Box bg="red.600" pb={12} pt={4} px={4} borderBottomLeftRadius={24} borderBottomRightRadius={24}>
+                <HStack justifyContent="space-between" alignItems="center" mb={6}>
+                    <Text fontSize="2xl" fontWeight="bold" color="white">Admin Profile</Text>
                     <Pressable bg="red.500" p={2} borderRadius="full">
-                        <Icon as={MaterialIcons} name="person-add" size={6} color="white" />
+                        <Icon as={MaterialIcons} name="settings" size={5} color="white" />
                     </Pressable>
                 </HStack>
             </Box>
 
-            {/* Search & Filter */}
-            <Box p={4}>
-                <Input
-                    placeholder="Search users..."
-                    value={searchQuery}
-                    onChangeText={setSearchQuery}
-                    borderRadius="xl"
-                    py={3}
-                    px={4}
-                    fontSize="md"
-                    bg="white"
-                    borderWidth={0}
-                    shadow={1}
-                    InputLeftElement={
-                        <Icon as={MaterialIcons} name="search" size={5} color="gray.400" ml={3} />
-                    }
-                    mb={4}
-                />
+            {/* Profile Card */}
+            <Box px={4} mt={-10}>
+                <Box bg="white" borderRadius="2xl" shadow={4} p={6} mb={4}>
+                    <VStack alignItems="center" space={3}>
+                        <Avatar
+                            size="2xl"
+                            source={{ uri: 'https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=400' }}
+                            borderWidth={4}
+                            borderColor="red.600"
+                        >
+                            <Avatar.Badge bg="green.500" />
+                        </Avatar>
+                        <VStack alignItems="center">
+                            <Text fontSize="2xl" fontWeight="bold">Admin Mike</Text>
+                            <Text fontSize="md" color="gray.600">System Administrator</Text>
+                            <Text fontSize="sm" color="gray.500" mt={1}>admin@hospital.com</Text>
+                        </VStack>
 
-                <ScrollView horizontal showsHorizontalScrollIndicator={false}>
-                    <HStack space={2}>
-                        {filters.map(filter => (
-                            <Pressable
-                                key={filter}
-                                onPress={() => setSelectedFilter(filter)}
-                                bg={selectedFilter === filter ? 'red.600' : 'white'}
-                                px={4}
-                                py={2}
-                                borderRadius="full"
-                                shadow={selectedFilter === filter ? 2 : 0}
-                            >
-                                <Text
-                                    fontWeight="semibold"
-                                    fontSize="sm"
-                                    color={selectedFilter === filter ? 'white' : 'gray.700'}
-                                >
-                                    {filter}
-                                </Text>
-                            </Pressable>
-                        ))}
-                    </HStack>
-                </ScrollView>
+                        {/* Stats */}
+                        <HStack space={6} mt={4} w="100%" justifyContent="center">
+                            <VStack alignItems="center">
+                                <Text fontSize="2xl" fontWeight="bold" color="red.600">1,234</Text>
+                                <Text fontSize="xs" color="gray.600">Total Users</Text>
+                            </VStack>
+                            <Box w="1px" bg="gray.300" />
+                            <VStack alignItems="center">
+                                <Text fontSize="2xl" fontWeight="bold" color="blue.600">45</Text>
+                                <Text fontSize="xs" color="gray.600">Doctors</Text>
+                            </VStack>
+                            <Box w="1px" bg="gray.300" />
+                            <VStack alignItems="center">
+                                <Text fontSize="2xl" fontWeight="bold" color="green.600">98%</Text>
+                                <Text fontSize="xs" color="gray.600">Uptime</Text>
+                            </VStack>
+                        </HStack>
+
+                        {/* Admin Badge */}
+                        <HStack space={2} mt={3}>
+                            <Box bg="red.100" px={3} py={1} borderRadius="full">
+                                <Text fontSize="xs" fontWeight="bold" color="red.700">SUPER ADMIN</Text>
+                            </Box>
+                            <Box bg="green.100" px={3} py={1} borderRadius="full">
+                                <Text fontSize="xs" fontWeight="bold" color="green.700">FULL ACCESS</Text>
+                            </Box>
+                        </HStack>
+                    </VStack>
+                </Box>
+
+                {/* Quick Info */}
+                <Box bg="white" borderRadius="xl" shadow={1} p={6} mb={4}>
+                    <Text fontSize="md" fontWeight="bold" mb={4}>Account Information</Text>
+                    <VStack space={3}>
+                        <HStack justifyContent="space-between">
+                            <Text fontSize="sm" color="gray.600">User ID:</Text>
+                            <Text fontSize="sm" fontWeight="semibold">ADMIN-001</Text>
+                        </HStack>
+                        <HStack justifyContent="space-between">
+                            <Text fontSize="sm" color="gray.600">Role:</Text>
+                            <Text fontSize="sm" fontWeight="semibold">Super Administrator</Text>
+                        </HStack>
+                        <HStack justifyContent="space-between">
+                            <Text fontSize="sm" color="gray.600">Last Login:</Text>
+                            <Text fontSize="sm" fontWeight="semibold">Today, 09:30 AM</Text>
+                        </HStack>
+                        <HStack justifyContent="space-between">
+                            <Text fontSize="sm" color="gray.600">Member Since:</Text>
+                            <Text fontSize="sm" fontWeight="semibold">Jan 2020</Text>
+                        </HStack>
+                        <HStack justifyContent="space-between">
+                            <Text fontSize="sm" color="gray.600">Account Status:</Text>
+                            <Box bg="green.100" px={2} py={1} borderRadius="md">
+                                <Text fontSize="xs" fontWeight="semibold" color="green.700">Active</Text>
+                            </Box>
+                        </HStack>
+                    </VStack>
+                </Box>
+
+                {/* Menu Items */}
+                <VStack space={3} mb={24}>
+                    {menuItems.map(item => (
+                        <Pressable key={item.id} onPress={() => handleMenuPress(item)}>
+                            <Box bg="white" borderRadius="xl" shadow={1} p={4}>
+                                <HStack alignItems="center" space={3}>
+                                    <Box bg={`${item.color.split('.')[0]}.100`} p={3} borderRadius="xl">
+                                        <Icon as={MaterialIcons} name={item.icon} size={6} color={item.color} />
+                                    </Box>
+                                    <Text flex={1} fontSize="md" fontWeight="semibold">{item.title}</Text>
+                                    <Icon as={MaterialIcons} name="chevron-right" size={6} color="gray.400" />
+                                </HStack>
+                            </Box>
+                        </Pressable>
+                    ))}
+                </VStack>
             </Box>
-
-            {/* Users List */}
-            <ScrollView flex={1} px={4} showsVerticalScrollIndicator={false}>
-                {users.map(user => (
-                    <Pressable key={user.id}>
-                        <Box bg="white" borderRadius="xl" shadow={2} p={4} mb={4}>
-                            <HStack space={4} alignItems="center">
-                                <Avatar size="lg" source={{ uri: user.avatar }} />
-                                <VStack flex={1}>
-                                    <Text fontWeight="bold" fontSize="md">{user.name}</Text>
-                                    <Text fontSize="sm" color="gray.600">{user.role}</Text>
-                                    <Text fontSize="sm" color="gray.500">{user.email}</Text>
-                                </VStack>
-                                <VStack alignItems="flex-end" space={2}>
-                                    <Badge
-                                        bg={user.status === 'Active' ? 'green.100' : 'red.100'}
-                                        _text={{
-                                            color: user.status === 'Active' ? 'green.700' : 'red.700',
-                                            fontWeight: 'semibold',
-                                            fontSize: 'xs'
-                                        }}
-                                        borderRadius="full"
-                                        px={3}
-                                        py={1}
-                                    >
-                                        {user.status}
-                                    </Badge>
-                                    <Icon as={MaterialIcons} name="more-vert" size={6} color="gray.400" />
-                                </VStack>
-                            </HStack>
-                        </Box>
-                    </Pressable>
-                ))}
-            </ScrollView>
-        </Box>
+        </ScrollView>
     );
 }
