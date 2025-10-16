@@ -1,9 +1,12 @@
 import React from 'react';
-import { Box, Text, HStack, VStack, ScrollView, Pressable, Icon } from 'native-base';
+import { Box, Text, HStack, VStack, ScrollView, Pressable, Icon, Button } from 'native-base';
 import { MaterialIcons } from '@expo/vector-icons';
 import { medicalHistory } from '@/app/src/data/doctor';
 
+import { useAuth } from '@/app/src/screens/context/AuthContext';
+
 export default function PatientProfileScreen() {
+    const { logout } = useAuth();
     return (
         <ScrollView flex={1} bg="gray.50">
             {/* Header */}
@@ -85,6 +88,7 @@ export default function PatientProfileScreen() {
                         </Box>
                     </VStack>
                 </Box>
+                <Button onPress={logout} colorScheme="red">Logout</Button>
             </Box>
         </ScrollView>
     );

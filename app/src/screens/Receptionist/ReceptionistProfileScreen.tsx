@@ -2,7 +2,19 @@ import React from 'react';
 import { Box, Text, HStack, VStack, ScrollView, Pressable, Icon, Avatar } from 'native-base';
 import { MaterialIcons } from '@expo/vector-icons';
 
+import { useAuth } from '@/app/src/screens/context/AuthContext';
+
 export default function ReceptionistProfileScreen({ navigation }: any) {
+    const { logout } = useAuth();
+
+    const handleMenuPress = async (item: any) => {
+        if (item.title === 'Logout') {
+            await logout();
+        } else {
+            // Handle other menu item presses
+        }
+    };
+
     const menuItems = [
         { id: '1', title: 'Edit Profile', icon: 'edit', color: 'blue.600' },
         { id: '2', title: 'Work Schedule', icon: 'schedule', color: 'purple.600' },
@@ -64,7 +76,7 @@ export default function ReceptionistProfileScreen({ navigation }: any) {
                 {/* Menu Items */}
                 <VStack space={3} mb={24}>
                     {menuItems.map(item => (
-                        <Pressable key={item.id}>
+                        <Pressable key={item.id} onPress={() => handleMenuPress(item)}>
                             <Box bg="white" borderRadius="xl" shadow={1} p={4}>
                                 <HStack alignItems="center" space={3}>
                                     <Box bg={`${item.color.split('.')[0]}.100`} p={3} borderRadius="xl">

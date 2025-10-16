@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
-import {Box, Text, HStack, VStack, ScrollView, Pressable, Icon, Avatar, Input, Badge} from 'native-base';
+import {Box, Text, HStack, VStack, ScrollView, Pressable, Icon, Avatar, Badge} from 'native-base';
 import { MaterialIcons } from '@expo/vector-icons';
+import { TextInput, StyleSheet, View } from 'react-native';
 
 const registeredPatients = [
     { id: '1', name: 'John Smith', phone: '+1 234-567-8900', lastVisit: '2 days ago', status: 'Active', avatar: 'https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=400' },
@@ -33,22 +34,15 @@ export default function PatientRegistryScreen({ navigation }: any) {
 
             {/* Search */}
             <Box p={4}>
-                <Input
-                    placeholder="Search patients by name or phone..."
-                    value={searchQuery}
-                    onChangeText={setSearchQuery}
-                    width="100%"
-                    borderRadius="xl"
-                    py={3}
-                    px={4}
-                    fontSize="md"
-                    bg="white"
-                    borderWidth={0}
-                    shadow={1}
-                    InputLeftElement={
-                        <Icon as={MaterialIcons} name="search" size={5} color="gray.400" ml={3} />
-                    }
-                />
+                <View style={styles.inputContainer}>
+                    <Icon as={MaterialIcons} name="search" size={5} color="gray.400" style={styles.inputIcon} />
+                    <TextInput
+                        placeholder="Search patients by name or phone..."
+                        value={searchQuery}
+                        onChangeText={setSearchQuery}
+                        style={styles.input}
+                    />
+                </View>
             </Box>
 
             {/* Patients List */}
@@ -93,3 +87,29 @@ export default function PatientRegistryScreen({ navigation }: any) {
         </Box>
     );
 }
+
+const styles = StyleSheet.create({
+    inputContainer: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        backgroundColor: 'white',
+        borderRadius: 12,
+        paddingHorizontal: 12,
+        shadowColor: '#000',
+        shadowOffset: {
+            width: 0,
+            height: 1,
+        },
+        shadowOpacity: 0.20,
+        shadowRadius: 1.41,
+        elevation: 2,
+    },
+    inputIcon: {
+        marginRight: 8,
+    },
+    input: {
+        flex: 1,
+        height: 50,
+        fontSize: 16,
+    },
+});

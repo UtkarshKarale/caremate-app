@@ -1,6 +1,31 @@
 import React, { useState } from 'react';
-import { Box, Text, Input, VStack, HStack, ScrollView, Pressable, Icon, Button, Radio } from 'native-base';
+import { Box, Text, VStack, HStack, ScrollView, Pressable, Icon, Button } from 'native-base';
 import { MaterialIcons } from '@expo/vector-icons';
+import { TextInput, StyleSheet, View } from 'react-native';
+
+function RadioButton({ value, selectedValue, onValueChange, children }) {
+    const isSelected = value === selectedValue;
+    return (
+        <Pressable onPress={() => onValueChange(value)}>
+            <HStack alignItems="center" space={2}>
+                <Box
+                    width={6}
+                    height={6}
+                    borderRadius="full"
+                    borderWidth={2}
+                    borderColor={isSelected ? "purple.600" : "gray.400"}
+                    alignItems="center"
+                    justifyContent="center"
+                >
+                    {isSelected && (
+                        <Box width={3} height={3} borderRadius="full" bg="purple.600" />
+                    )}
+                </Box>
+                {children}
+            </HStack>
+        </Pressable>
+    );
+}
 
 export default function CheckInScreen({ navigation }: any) {
     const [searchQuery, setSearchQuery] = useState('');
@@ -38,42 +63,22 @@ export default function CheckInScreen({ navigation }: any) {
                 {/* Appointment Type */}
                 <Box bg="white" borderRadius="xl" shadow={1} p={6} mb={4}>
                     <Text fontSize="md" fontWeight="bold" mb={3}>Appointment Type</Text>
-                    <Radio.Group name={"appointmentType"} value={appointmentType} onChange={setAppointmentType}>
-                        <VStack space={3}>
-                            <Radio value="scheduled" colorScheme="purple">
-                                <Text fontWeight="semibold" ml={2}>Scheduled Appointment</Text>
-                            </Radio>
-                            <Radio value="walkin" colorScheme="purple">
-                                <Text fontWeight="semibold" ml={2}>Walk-In</Text>
-                            </Radio>
-                            <Radio value="emergency" colorScheme="purple">
-                                <Text fontWeight="semibold" ml={2}>Emergency</Text>
-                            </Radio>
-                        </VStack>
-                    </Radio.Group>
+                    <VStack space={3}>
+                        <RadioButton value="scheduled" selectedValue={appointmentType} onValueChange={setAppointmentType}>
+                            <Text fontWeight="semibold" ml={2}>Scheduled Appointment</Text>
+                        </RadioButton>
+                        <RadioButton value="walkin" selectedValue={appointmentType} onValueChange={setAppointmentType}>
+                            <Text fontWeight="semibold" ml={2}>Walk-In</Text>
+                        </RadioButton>
+                        <RadioButton value="emergency" selectedValue={appointmentType} onValueChange={setAppointmentType}>
+                            <Text fontWeight="semibold" ml={2}>Emergency</Text>
+                        </RadioButton>
+                    </VStack>
                 </Box>
 
                 {/* Search Patient */}
                 <Box bg="white" borderRadius="xl" shadow={1} p={6} mb={4}>
                     <Text fontSize="md" fontWeight="bold" mb={3}>Search Patient</Text>
-                    <Input
-                        placeholder="Search by name or phone..."
-                        value={searchQuery}
-                        onChangeText={setSearchQuery}
-                        borderRadius="xl"
-                        py={3}
-                        px={4}
-                        fontSize="md"
-                        bg="gray.50"
-                        borderWidth={1}
-                        borderColor="gray.200"
-                        _focus={{ borderColor: 'purple.600', bg: 'white' }}
-                        InputLeftElement={
-                            <Icon as={MaterialIcons} name="search" size={5} color="gray.400" ml={3} />
-                        }
-                        mb={4}
-                    />
-
                     {/* Patient List */}
                     <VStack space={2}>
                         {patients.map(patient => (
@@ -109,23 +114,13 @@ export default function CheckInScreen({ navigation }: any) {
                     <Box bg="white" borderRadius="xl" shadow={1} p={6} mb={4}>
                         <Text fontSize="md" fontWeight="bold" mb={3}>Additional Information</Text>
                         <VStack space={3}>
-                            <Input
+                            <TextInput
                                 placeholder="Reason for visit"
-                                borderRadius="xl"
-                                py={3}
-                                px={4}
-                                bg="gray.50"
-                                borderWidth={1}
-                                borderColor="gray.200"
+                                style={styles.input}
                             />
-                            <Input
+                            <TextInput
                                 placeholder="Special notes (optional)"
-                                borderRadius="xl"
-                                py={3}
-                                px={4}
-                                bg="gray.50"
-                                borderWidth={1}
-                                borderColor="gray.200"
+                                style={styles.input}
                                 multiline
                                 numberOfLines={3}
                             />
@@ -151,3 +146,24 @@ export default function CheckInScreen({ navigation }: any) {
         </Box>
     );
 }
+
+const styles = StyleSheet.create({
+    inputContainer: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        backgroundColor: '#f8fafc',
+        borderRadius: 12,
+        paddingHorizontal: 12,
+        borderWidth: 1,
+        borderColor: '#e2e8f0',
+        marginBottom: 16,
+    },
+    inputIcon: {
+        marginRight: 8,
+    },
+    input: {
+        flex: 1,
+        height: 50,
+        fontSize: 16,
+    },
+});

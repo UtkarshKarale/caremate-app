@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
-import { Box, Text, HStack, VStack, ScrollView, Pressable, Icon, Input, Badge } from 'native-base';
+import { Box, Text, HStack, VStack, ScrollView, Pressable, Icon, Badge } from 'native-base';
 import { MaterialIcons } from '@expo/vector-icons';
+import { TextInput, StyleSheet, View } from 'react-native';
 
 const billingHistory = [
     { id: '1', billNumber: 'BILL-001234', patientName: 'John Smith', amount: 2500, date: '2025-10-14', status: 'Paid', paymentMethod: 'Cash' },
@@ -33,22 +34,15 @@ export default function BillingHistoryScreen({ navigation }: any) {
 
             {/* Search & Filter */}
             <Box p={4}>
-                <Input
-                    placeholder="Search by bill number or patient..."
-                    value={searchQuery}
-                    onChangeText={setSearchQuery}
-                    borderRadius="xl"
-                    py={3}
-                    px={4}
-                    fontSize="md"
-                    bg="white"
-                    borderWidth={0}
-                    shadow={1}
-                    InputLeftElement={
-                        <Icon as={MaterialIcons} name="search" size={5} color="gray.400" ml={3} />
-                    }
-                    mb={4}
-                />
+                <View style={styles.inputContainer}>
+                    <Icon as={MaterialIcons} name="search" size={5} color="gray.400" style={styles.inputIcon} />
+                    <TextInput
+                        placeholder="Search by bill number or patient..."
+                        value={searchQuery}
+                        onChangeText={setSearchQuery}
+                        style={styles.input}
+                    />
+                </View>
 
                 <ScrollView horizontal showsHorizontalScrollIndicator={false}>
                     <HStack space={2}>
@@ -117,3 +111,30 @@ export default function BillingHistoryScreen({ navigation }: any) {
         </Box>
     );
 }
+
+const styles = StyleSheet.create({
+    inputContainer: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        backgroundColor: 'white',
+        borderRadius: 12,
+        paddingHorizontal: 12,
+        marginBottom: 16,
+        shadowColor: '#000',
+        shadowOffset: {
+            width: 0,
+            height: 1,
+        },
+        shadowOpacity: 0.20,
+        shadowRadius: 1.41,
+        elevation: 2,
+    },
+    inputIcon: {
+        marginRight: 8,
+    },
+    input: {
+        flex: 1,
+        height: 50,
+        fontSize: 16,
+    },
+});

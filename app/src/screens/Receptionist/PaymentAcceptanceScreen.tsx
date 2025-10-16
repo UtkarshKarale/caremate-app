@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
-import { Box, Text, HStack, VStack, ScrollView, Pressable, Icon, Input, Button, Radio } from 'native-base';
+import { Box, Text, HStack, VStack, ScrollView, Pressable, Icon, Button, Radio } from 'native-base';
 import { MaterialIcons } from '@expo/vector-icons';
+import { TextInput, StyleSheet, View } from 'react-native';
 
 export default function PaymentAcceptanceScreen({ navigation, route }: any) {
     const { billNumber, patientName, patientId, total } = route.params;
@@ -108,18 +109,16 @@ export default function PaymentAcceptanceScreen({ navigation, route }: any) {
                             <>
                                 <VStack space={2}>
                                     <Text fontSize="sm" fontWeight="semibold" color="gray.700">Amount Received</Text>
-                                    <Input
-                                        value={amountReceived}
-                                        onChangeText={setAmountReceived}
-                                        placeholder="Enter amount received"
-                                        keyboardType="numeric"
-                                        fontSize="lg"
-                                        borderRadius="xl"
-                                        bg="gray.50"
-                                        InputLeftElement={
-                                            <Icon as={MaterialIcons} name="attach-money" size={5} ml={4} />
-                                        }
-                                    />
+                                    <View style={styles.inputContainer}>
+                                        <Icon as={MaterialIcons} name="attach-money" size={5} style={styles.inputIcon} />
+                                        <TextInput
+                                            value={amountReceived}
+                                            onChangeText={setAmountReceived}
+                                            placeholder="Enter amount received"
+                                            keyboardType="numeric"
+                                            style={styles.input}
+                                        />
+                                    </View>
                                 </VStack>
                                 {amountReceived && (
                                     <Box bg="green.50" p={4} borderRadius="lg">
@@ -138,24 +137,22 @@ export default function PaymentAcceptanceScreen({ navigation, route }: any) {
                             <VStack space={3}>
                                 <VStack space={2}>
                                     <Text fontSize="sm" fontWeight="semibold" color="gray.700">Card Number</Text>
-                                    <Input
+                                    <TextInput
                                         value={cardNumber}
                                         onChangeText={setCardNumber}
                                         placeholder="Enter last 4 digits"
                                         keyboardType="numeric"
                                         maxLength={4}
-                                        borderRadius="xl"
-                                        bg="gray.50"
+                                        style={styles.input}
                                     />
                                 </VStack>
                                 <VStack space={2}>
                                     <Text fontSize="sm" fontWeight="semibold" color="gray.700">Transaction ID</Text>
-                                    <Input
+                                    <TextInput
                                         value={transactionId}
                                         onChangeText={setTransactionId}
                                         placeholder="Enter transaction ID"
-                                        borderRadius="xl"
-                                        bg="gray.50"
+                                        style={styles.input}
                                     />
                                 </VStack>
                             </VStack>
@@ -165,12 +162,11 @@ export default function PaymentAcceptanceScreen({ navigation, route }: any) {
                             <VStack space={3}>
                                 <VStack space={2}>
                                     <Text fontSize="sm" fontWeight="semibold" color="gray.700">UPI Transaction ID</Text>
-                                    <Input
+                                    <TextInput
                                         value={transactionId}
                                         onChangeText={setTransactionId}
                                         placeholder="Enter UPI transaction ID"
-                                        borderRadius="xl"
-                                        bg="gray.50"
+                                        style={styles.input}
                                     />
                                 </VStack>
                                 <Box bg="purple.50" p={4} borderRadius="lg" alignItems="center">
@@ -186,26 +182,23 @@ export default function PaymentAcceptanceScreen({ navigation, route }: any) {
                             <VStack space={3}>
                                 <VStack space={2}>
                                     <Text fontSize="sm" fontWeight="semibold" color="gray.700">Insurance Provider</Text>
-                                    <Input
+                                    <TextInput
                                         placeholder="Enter insurance provider"
-                                        borderRadius="xl"
-                                        bg="gray.50"
+                                        style={styles.input}
                                     />
                                 </VStack>
                                 <VStack space={2}>
                                     <Text fontSize="sm" fontWeight="semibold" color="gray.700">Policy Number</Text>
-                                    <Input
+                                    <TextInput
                                         placeholder="Enter policy number"
-                                        borderRadius="xl"
-                                        bg="gray.50"
+                                        style={styles.input}
                                     />
                                 </VStack>
                                 <VStack space={2}>
                                     <Text fontSize="sm" fontWeight="semibold" color="gray.700">Claim Number</Text>
-                                    <Input
+                                    <TextInput
                                         placeholder="Enter claim number"
-                                        borderRadius="xl"
-                                        bg="gray.50"
+                                        style={styles.input}
                                     />
                                 </VStack>
                             </VStack>
@@ -233,3 +226,28 @@ export default function PaymentAcceptanceScreen({ navigation, route }: any) {
         </Box>
     );
 }
+
+const styles = StyleSheet.create({
+    inputContainer: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        backgroundColor: '#f8fafc',
+        borderRadius: 12,
+        paddingHorizontal: 12,
+        borderWidth: 1,
+        borderColor: '#e2e8f0',
+    },
+    inputIcon: {
+        marginRight: 8,
+    },
+    input: {
+        flex: 1,
+        height: 50,
+        fontSize: 16,
+        backgroundColor: '#f8fafc',
+        borderRadius: 12,
+        paddingHorizontal: 12,
+        borderWidth: 1,
+        borderColor: '#e2e8f0',
+    },
+});

@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
-import { Box, Text, HStack, VStack, ScrollView, Pressable, Badge, Icon, Avatar, Input } from 'native-base';
+import { Box, Text, HStack, VStack, ScrollView, Pressable, Badge, Icon, Avatar } from 'native-base';
 import { MaterialIcons } from '@expo/vector-icons';
+import { TextInput, StyleSheet, View } from 'react-native';
 
 const appointments = [
     { id: '1', patient: 'John Smith', time: '09:00 AM', date: 'Today', type: 'Check-up', status: 'Completed', avatar: 'https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=400' },
@@ -34,21 +35,13 @@ export default function DoctorAppointmentsScreen({ navigation }: any) {
 
             {/* Search & Filter */}
             <Box p={4}>
-                <Input
-                    placeholder="Search appointments..."
-                    width="100%"
-                    borderRadius="xl"
-                    py={3}
-                    px={4}
-                    fontSize="md"
-                    bg="white"
-                    borderWidth={0}
-                    shadow={1}
-                    InputLeftElement={
-                        <Icon as={MaterialIcons} name="search" size={5} color="gray.400" ml={3} />
-                    }
-                    mb={4}
-                />
+                <View style={styles.inputContainer}>
+                    <Icon as={MaterialIcons} name="search" size={5} color="gray.400" style={styles.inputIcon} />
+                    <TextInput
+                        placeholder="Search appointments..."
+                        style={styles.input}
+                    />
+                </View>
 
                 {/* Filter Tabs */}
                 <ScrollView horizontal showsHorizontalScrollIndicator={false}>
@@ -128,3 +121,30 @@ export default function DoctorAppointmentsScreen({ navigation }: any) {
         </Box>
     );
 }
+
+const styles = StyleSheet.create({
+    inputContainer: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        backgroundColor: 'white',
+        borderRadius: 12,
+        paddingHorizontal: 12,
+        marginBottom: 16,
+        shadowColor: '#000',
+        shadowOffset: {
+            width: 0,
+            height: 1,
+        },
+        shadowOpacity: 0.20,
+        shadowRadius: 1.41,
+        elevation: 2,
+    },
+    inputIcon: {
+        marginRight: 8,
+    },
+    input: {
+        flex: 1,
+        height: 50,
+        fontSize: 16,
+    },
+});

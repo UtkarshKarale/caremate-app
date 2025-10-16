@@ -13,7 +13,7 @@ export default function HomeScreen({ navigation }: any) {
             <Box bg="blue.600" pb={6} pt={4} px={4} borderBottomLeftRadius={24} borderBottomRightRadius={24}>
                 <HStack justifyContent="space-between" alignItems="center" mb={6}>
                     <Box>
-                        <Text fontSize="2xl" fontWeight="bold" color="white">Hello, {user?.fullname}</Text>
+                        <Text fontSize="2xl" fontWeight="bold" color="white">Hello, {user?.name}</Text>
                         <Text fontSize="sm" color="blue.100">Welcome back!</Text>
                     </Box>
                     <HStack space={2}>
@@ -50,7 +50,7 @@ export default function HomeScreen({ navigation }: any) {
                         p={6}
                         borderRadius="2xl"
                         shadow={1}
-                        onPress={() => navigation.navigate('DoctorSelection')}
+                        onPress={() => navigation.navigate('PatientApp', { screen: 'DoctorSelection' })}
                     >
                         <VStack alignItems="center" space={2}>
                             <Box bg="blue.100" p={4} borderRadius="2xl">
@@ -60,7 +60,7 @@ export default function HomeScreen({ navigation }: any) {
                         </VStack>
                     </Pressable>
 
-                    <Pressable flex={1} bg="white" p={6} borderRadius="2xl" shadow={1}>
+                    <Pressable flex={1} bg="white" p={6} borderRadius="2xl" shadow={1} onPress={() => navigation.navigate('PatientApp', { screen: 'DoctorSelection' })}>
                         <VStack alignItems="center" space={2}>
                             <Box bg="green.100" p={4} borderRadius="2xl">
                                 <Icon as={MaterialIcons} name="medical-services" size={7} color="green.600" />

@@ -84,6 +84,16 @@ export const getAllActiveUsers = async () => {
   }
 };
 
+export const getAllDoctors = async () => {
+    try {
+        const response = await api.get(`/doctor/lookup/all`);
+        return response.data;
+    } catch (error) {
+        console.error('Get all doctors error:', error.response?.data || error.message);
+        throw error;
+    }
+};
+
 export const forgotPassword = async (email) => {
   try {
     const response = await api.put(`/user/forgot-password`, null, { params: { email } });

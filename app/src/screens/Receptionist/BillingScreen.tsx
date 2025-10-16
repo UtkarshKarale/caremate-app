@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Box, Text, HStack, VStack, ScrollView, Pressable, Icon, Avatar, Input, Button } from 'native-base';
+import { Box, Text, HStack, VStack, ScrollView, Pressable, Icon, Avatar, Button } from 'native-base';
 import { MaterialIcons } from '@expo/vector-icons';
 
 export default function BillingScreen({ navigation }: any) {

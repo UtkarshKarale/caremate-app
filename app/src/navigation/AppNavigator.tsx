@@ -3,7 +3,7 @@ import { NavigationContainer } from '@react-navigation/native';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import { MaterialIcons } from '@expo/vector-icons';
-import { Icon, Box, Spinner, Text, VStack  } from 'native-base';
+import { Icon, Box, Spinner, Text, VStack, Pressable } from 'native-base';
 
 // Auth Screens
 import LoginScreen from '@/app/src/screens/auth/LoginScreen';
@@ -64,6 +64,7 @@ function BillingStack() {
 }
 // Patient Bottom Tab Navigator
 function PatientTabNavigator() {
+    const { logout } = useAuth();
     return (
         <Tab.Navigator
             screenOptions={{
@@ -109,7 +110,31 @@ function PatientTabNavigator() {
                     ),
                 }}
             />
+            <Tab.Screen
+                name="Logout"
+                component={() => null}
+                options={{
+                    tabBarIcon: ({ color, size }) => (
+                        <Icon as={MaterialIcons} name="logout" size={size} color={color} />
+                    ),
+                    tabBarButton: (props) => (
+                        <Pressable {...props} onPress={logout} />
+                    ),
+                }}
+            />
         </Tab.Navigator>
+    );
+}
+
+// Patient Stack Navigator
+function PatientStackNavigator() {
+    return (
+        <Stack.Navigator screenOptions={{ headerShown: false }}>
+            <Stack.Screen name="PatientTabs" component={PatientTabNavigator} />
+            <Stack.Screen name="DoctorSelection" component={DoctorSelectionScreen} />
+            <Stack.Screen name="TimeSlotSelection" component={TimeSlotSelectionScreen} />
+            <Stack.Screen name="Confirmation" component={ConfirmationScreen} />
+        </Stack.Navigator>
     );
 }
 
@@ -307,6 +332,7 @@ function AdminTabNavigator() {
                     ),
                 }}
             />
+        
         </Tab.Navigator>
     );
 }
@@ -340,11 +366,11 @@ export default function AppNavigator() {
                 ) : (
                     // ========== LOGGED IN - ROLE BASED ==========
                     <>
-                        {user?.role.toLowerCase() === 'user' ? (
-                            <Stack.Screen name="PatientApp" component={PatientTabNavigator} />
-                        ) : user?.role === 'doctor' ? (
+                        {user?.role.toLowerCase() === 'patient' ? (
+                            <Stack.Screen name="PatientApp" component={PatientStackNavigator} />
+                        ) : user?.role.toLowerCase() === 'doctor' ? (
                             <Stack.Screen name="DoctorApp" component={DoctorTabNavigator} />
-                        ) : user?.role === 'receptionist' ? (
+                        ) : user?.role.toLowerCase() === 'receptionist' ? (
                             <Stack.Screen name="ReceptionistApp" component={ReceptionistTabNavigator} />
                         ) : user?.role.toLowerCase() === 'admin' ? (
                             <Stack.Screen name="AdminApp" component={AdminTabNavigator} />

@@ -1,11 +1,30 @@
-import React, { useState } from 'react';
-import { Box, Text, Input, HStack, VStack, ScrollView, Pressable, Avatar, Icon } from 'native-base';
+import React, { useEffect, useState } from 'react';
+import { Box, Text, HStack, VStack, ScrollView, Pressable, Avatar, Icon } from 'native-base';
 import { MaterialIcons } from '@expo/vector-icons';
-import { doctors, specialties } from '@/app/src/data/doctor';
+import { getAllDoctors } from '../../../../lib/api';
+import { TextInput, StyleSheet, View } from 'react-native';
 
 export default function DoctorSelectionScreen({ navigation }: any) {
     const [selectedSpecialty, setSelectedSpecialty] = useState('All Specialties');
     const [searchQuery, setSearchQuery] = useState('');
+    const [doctors, setDoctors] = useState([]);
+    const [specialties, setSpecialties] = useState([]);
+
+    useEffect(() => {
+        const fetchDoctors = async () => {
+            try {
+                const fetchedDoctors = await getAllDoctors();
+                setDoctors(fetchedDoctors);
+                const uniqueSpecialties = ['All Specialties', ...new Set(fetchedDoctors.map(doc => doc.specialty))];
+                // @ts-ignore
+                setSpecialties(uniqueSpecialties);
+            } catch (error) {
+                console.error('Error fetching doctors:', error);
+            }
+        };
+
+        fetchDoctors();
+    }, []);
 
     const filteredDoctors = doctors.filter(doctor => {
         const matchesSpecialty = selectedSpecialty === 'All Specialties' || doctor.specialty === selectedSpecialty;
@@ -31,23 +50,15 @@ export default function DoctorSelectionScreen({ navigation }: any) {
 
             {/* Search */}
             <Box p={4}>
-                <Input
-                    placeholder="Search doctors, specialties..."
-                    width="100%"
-                    borderRadius="xl"
-                    py={3}
-                    px={4}
-                    fontSize="md"
-                    bg="white"
-                    borderWidth={0}
-                    shadow={1}
-                    value={searchQuery}
-                    onChangeText={setSearchQuery}
-                    InputLeftElement={
-                        <Icon as={MaterialIcons} name="search" size={5} color="gray.400" ml={3} />
-                    }
-                    mb={4}
-                />
+                <View style={styles.inputContainer}>
+                    <Icon as={MaterialIcons} name="search" size={5} color="gray.400" style={styles.inputIcon} />
+                    <TextInput
+                        placeholder="Search doctors, specialties..."
+                        value={searchQuery}
+                        onChangeText={setSearchQuery}
+                        style={styles.input}
+                    />
+                </View>
 
                 {/* Specialty Filter */}
                 <ScrollView horizontal showsHorizontalScrollIndicator={false} mb={4}>
@@ -119,3 +130,30 @@ export default function DoctorSelectionScreen({ navigation }: any) {
         </Box>
     );
 }
+
+const styles = StyleSheet.create({
+    inputContainer: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        backgroundColor: 'white',
+        borderRadius: 12,
+        paddingHorizontal: 12,
+        marginBottom: 16,
+        shadowColor: '#000',
+        shadowOffset: {
+            width: 0,
+            height: 1,
+        },
+        shadowOpacity: 0.20,
+        shadowRadius: 1.41,
+        elevation: 2,
+    },
+    inputIcon: {
+        marginRight: 8,
+    },
+    input: {
+        flex: 1,
+        height: 50,
+        fontSize: 16,
+    },
+});

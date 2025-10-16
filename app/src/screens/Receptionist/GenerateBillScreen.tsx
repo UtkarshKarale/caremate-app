@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
-import { Box, Text, HStack, VStack, ScrollView, Pressable, Icon, Input, Button, Select, CheckIcon } from 'native-base';
+import { Box, Text, HStack, VStack, ScrollView, Pressable, Icon, Button, Select, CheckIcon } from 'native-base';
 import { MaterialIcons } from '@expo/vector-icons';
+import { TextInput, StyleSheet, View } from 'react-native';
 
 const services = [
     { id: '1', name: 'Consultation', price: 500 },
@@ -68,22 +69,20 @@ export default function GenerateBillScreen({ navigation }: any) {
                     <VStack space={3}>
                         <VStack space={2}>
                             <Text fontSize="sm" fontWeight="semibold" color="gray.700">Patient Name</Text>
-                            <Input
+                            <TextInput
                                 value={patientName}
                                 onChangeText={setPatientName}
                                 placeholder="Enter patient name"
-                                borderRadius="xl"
-                                bg="gray.50"
+                                style={styles.input}
                             />
                         </VStack>
                         <VStack space={2}>
                             <Text fontSize="sm" fontWeight="semibold" color="gray.700">Patient ID</Text>
-                            <Input
+                            <TextInput
                                 value={patientId}
                                 onChangeText={setPatientId}
                                 placeholder="Enter patient ID"
-                                borderRadius="xl"
-                                bg="gray.50"
+                                style={styles.input}
                             />
                         </VStack>
                     </VStack>
@@ -103,14 +102,12 @@ export default function GenerateBillScreen({ navigation }: any) {
                                 </VStack>
                                 {service.name === 'Medicine' ? (
                                     <HStack space={2} alignItems="center">
-                                        <Input
+                                        <TextInput
                                             value={customPrice}
                                             onChangeText={setCustomPrice}
                                             placeholder="Price"
                                             keyboardType="numeric"
-                                            w={20}
-                                            size="sm"
-                                            borderRadius="lg"
+                                            style={styles.input}
                                         />
                                         <Pressable
                                             bg="purple.600"
@@ -209,3 +206,15 @@ export default function GenerateBillScreen({ navigation }: any) {
         </Box>
     );
 }
+
+const styles = StyleSheet.create({
+    input: {
+        height: 50,
+        fontSize: 16,
+        backgroundColor: '#f8fafc',
+        borderRadius: 12,
+        paddingHorizontal: 12,
+        borderWidth: 1,
+        borderColor: '#e2e8f0',
+    },
+});

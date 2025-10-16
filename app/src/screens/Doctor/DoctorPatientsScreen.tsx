@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
-import { Box, Text, HStack, VStack, ScrollView, Pressable, Icon, Avatar, Input } from 'native-base';
+import { Box, Text, HStack, VStack, ScrollView, Pressable, Icon, Avatar } from 'native-base';
 import { MaterialIcons } from '@expo/vector-icons';
+import { TextInput, StyleSheet, View } from 'react-native';
 
 const patients = [
     { id: '1', name: 'John Smith', age: 45, condition: 'Hypertension', lastVisit: '2 days ago', avatar: 'https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=400' },
@@ -30,22 +31,15 @@ export default function DoctorPatientsScreen({ navigation }: any) {
 
             {/* Search */}
             <Box p={4}>
-                <Input
+                <View style={styles.inputContainer}>
+                <Icon as={MaterialIcons} name="search" size={5} color="gray.400" style={styles.inputIcon} />
+                <TextInput
                     placeholder="Search patients..."
                     value={searchQuery}
                     onChangeText={setSearchQuery}
-                    width="100%"
-                    borderRadius="xl"
-                    py={3}
-                    px={4}
-                    fontSize="md"
-                    bg="white"
-                    borderWidth={0}
-                    shadow={1}
-                    InputLeftElement={
-                        <Icon as={MaterialIcons} name="search" size={5} color="gray.400" ml={3} />
-                    }
+                    style={styles.input}
                 />
+                </View>
             </Box>
 
             {/* Patients List */}
@@ -78,3 +72,29 @@ export default function DoctorPatientsScreen({ navigation }: any) {
         </Box>
     );
 }
+
+const styles = StyleSheet.create({
+    inputContainer: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        backgroundColor: 'white',
+        borderRadius: 12,
+        paddingHorizontal: 12,
+        shadowColor: '#000',
+        shadowOffset: {
+            width: 0,
+            height: 1,
+        },
+        shadowOpacity: 0.20,
+        shadowRadius: 1.41,
+        elevation: 2,
+    },
+    inputIcon: {
+        marginRight: 8,
+    },
+    input: {
+        flex: 1,
+        height: 50,
+        fontSize: 16,
+    },
+});

@@ -9,15 +9,6 @@ patchNativeBaseOutlineBug();
 // 🩹 Patch to prevent "outlineWidth string→number" crash on Android (RN 0.81+)
 const theme = extendTheme({
     components: {
-        Input: {
-            baseStyle: {
-                _focus: {
-                    borderColor: 'blue.600',
-                    bg: 'white',
-                    outlineWidth: undefined, // 👈 remove outlineWidth
-                },
-            },
-        },
         Button: {
             baseStyle: {
                 _focus: {
