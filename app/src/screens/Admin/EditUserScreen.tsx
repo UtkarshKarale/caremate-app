@@ -10,7 +10,7 @@ import {
   ScrollView 
 } from 'react-native';
 import { MaterialIcons } from '@expo/vector-icons';
-import { updateUser } from '@/lib/api';
+import { updateUser, findUserById } from '@/lib/api';
 import { useAuth } from '../context/AuthContext';
 
 export default function EditUserScreen({ navigation }: any) {
@@ -41,10 +41,8 @@ export default function EditUserScreen({ navigation }: any) {
 
       // Update AuthContext session
       if (setUser) {
-        setUser(prevUser => ({
-          ...prevUser,
-          ...updatedUserFromBackend,
-        }));
+        const updatedUser = await findUserById(user.id);
+        setUser({ ...updatedUser, role: user.role });
       }
 
       Alert.alert("Success", "Profile updated successfully");

@@ -3,13 +3,18 @@ import { NavigationContainer } from '@react-navigation/native';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import { MaterialIcons } from '@expo/vector-icons';
-import { Icon, Box, Spinner, Text, VStack, Pressable } from 'native-base';
+import { Icon, Box, Spinner, Text, VStack } from 'native-base';
 
 // Auth Screens
 import LoginScreen from '@/app/src/screens/auth/LoginScreen';
 import SignupScreen from '@/app/src/screens/auth/SignupScreen';
+
+// Admin Screens
 import ReportsAnalyticsScreen from '@/app/src/screens/Admin/ReportsAnalyticsScreen';
 import AdminProfileScreen from '@/app/src/screens/Admin/AdminProfileScreen';
+import UserManagementScreen from '@/app/src/screens/Admin/UserManagementScreen';
+import EditUserScreen from '@/app/src/screens/Admin/EditUserScreen';
+import AdminHomeScreen from '@/app/src/screens/Admin/AdminHomeScreen';
 
 // Billing Screens
 import BillingScreen from '../screens/Receptionist/BillingScreen';
@@ -19,7 +24,6 @@ import PaymentAcceptanceScreen from '../screens/Receptionist/PaymentAcceptanceSc
 import PaymentSuccessScreen from '../screens/Receptionist/PaymentSuccessScreen';
 import BillingHistoryScreen from '../screens/Receptionist/BillingHistoryScreen';
 import PendingPaymentsScreen from '../screens/Receptionist/PendingPaymentsScreen';
-
 
 // Patient Screens
 import HomeScreen from '../screens/HomeScreen';
@@ -41,31 +45,30 @@ import CheckInScreen from '../screens/Receptionist/CheckInScreen';
 import ReceptionistAppointmentsScreen from '../screens/Receptionist/ReceptionistAppointmentsScreen';
 import PatientRegistryScreen from '../screens/Receptionist/PatientRegistryScreen';
 import ReceptionistProfileScreen from '../screens/Receptionist/ReceptionistProfileScreen';
-import UserManagementScreen from "@/app/src/screens/Admin/UserManagementScreen";
-import EditUserScreen from "@/app/src/screens/Admin/EditUserScreen";
-import AdminHomeScreen from "@/app/src/screens/Admin/AdminHomeScreen";
-import {useAuth} from "@/app/src/screens/context/AuthContext";
+
+import { useAuth } from '@/app/src/screens/context/AuthContext';
 
 const Stack = createNativeStackNavigator();
 const Tab = createBottomTabNavigator();
 
-//billing stack
-function BillingStack() {
+// ============================================
+// PATIENT NAVIGATION - FIXED
+// ============================================
+
+// Home Stack with Booking Flow
+function HomeStack() {
     return (
         <Stack.Navigator screenOptions={{ headerShown: false }}>
-            <Stack.Screen name="BillingMain" component={BillingScreen} />
-            <Stack.Screen name="GenerateBill" component={GenerateBillScreen} />
-            <Stack.Screen name="BillPreview" component={BillPreviewScreen} />
-            <Stack.Screen name="PaymentAcceptance" component={PaymentAcceptanceScreen} />
-            <Stack.Screen name="PaymentSuccess" component={PaymentSuccessScreen} />
-            <Stack.Screen name="BillingHistory" component={BillingHistoryScreen} />
-            <Stack.Screen name="PendingPayments" component={PendingPaymentsScreen} />
+            <Stack.Screen name="HomeMain" component={HomeScreen} />
+            <Stack.Screen name="DoctorSelection" component={DoctorSelectionScreen} />
+            <Stack.Screen name="TimeSlotSelection" component={TimeSlotSelectionScreen} />
+            <Stack.Screen name="Confirmation" component={ConfirmationScreen} />
         </Stack.Navigator>
     );
 }
+
 // Patient Bottom Tab Navigator
 function PatientTabNavigator() {
-    const { logout } = useAuth();
     return (
         <Tab.Navigator
             screenOptions={{
@@ -75,7 +78,7 @@ function PatientTabNavigator() {
                 tabBarStyle: {
                     paddingBottom: 5,
                     paddingTop: 5,
-                    height: 60,
+                    height: 80,
                 },
                 tabBarLabelStyle: {
                     fontSize: 12,
@@ -85,7 +88,7 @@ function PatientTabNavigator() {
         >
             <Tab.Screen
                 name="Home"
-                component={HomeScreen}
+                component={HomeStack}
                 options={{
                     tabBarIcon: ({ color, size }) => (
                         <Icon as={MaterialIcons} name="home" size={size} color={color} />
@@ -111,35 +114,14 @@ function PatientTabNavigator() {
                     ),
                 }}
             />
-            <Tab.Screen
-                name="Logout"
-                component={() => null}
-                options={{
-                    tabBarIcon: ({ color, size }) => (
-                        <Icon as={MaterialIcons} name="logout" size={size} color={color} />
-                    ),
-                    tabBarButton: (props) => (
-                    <Pressable {...props} onPress={logout} />
-                    ),
-                }}
-            />
         </Tab.Navigator>
     );
 }
 
-// Patient Stack Navigator
-function PatientStackNavigator() {
-    return (
-        <Stack.Navigator screenOptions={{ headerShown: false }}>
-            <Stack.Screen name="PatientTabs" component={PatientTabNavigator} />
-            <Stack.Screen name="DoctorSelection" component={DoctorSelectionScreen} />
-            <Stack.Screen name="TimeSlotSelection" component={TimeSlotSelectionScreen} />
-            <Stack.Screen name="Confirmation" component={ConfirmationScreen} />
-        </Stack.Navigator>
-    );
-}
+// ============================================
+// DOCTOR NAVIGATION
+// ============================================
 
-// Doctor Bottom Tab Navigator
 function DoctorTabNavigator() {
     return (
         <Tab.Navigator
@@ -150,7 +132,7 @@ function DoctorTabNavigator() {
                 tabBarStyle: {
                     paddingBottom: 5,
                     paddingTop: 5,
-                    height: 60,
+                    height: 80,
                 },
                 tabBarLabelStyle: {
                     fontSize: 12,
@@ -202,7 +184,25 @@ function DoctorTabNavigator() {
     );
 }
 
-// Receptionist Bottom Tab Navigator
+// ============================================
+// RECEPTIONIST NAVIGATION
+// ============================================
+
+// Billing Stack
+function BillingStack() {
+    return (
+        <Stack.Navigator screenOptions={{ headerShown: false }}>
+            <Stack.Screen name="BillingMain" component={BillingScreen} />
+            <Stack.Screen name="GenerateBill" component={GenerateBillScreen} />
+            <Stack.Screen name="BillPreview" component={BillPreviewScreen} />
+            <Stack.Screen name="PaymentAcceptance" component={PaymentAcceptanceScreen} />
+            <Stack.Screen name="PaymentSuccess" component={PaymentSuccessScreen} />
+            <Stack.Screen name="BillingHistory" component={BillingHistoryScreen} />
+            <Stack.Screen name="PendingPayments" component={PendingPaymentsScreen} />
+        </Stack.Navigator>
+    );
+}
+
 function ReceptionistTabNavigator() {
     return (
         <Tab.Navigator
@@ -270,9 +270,11 @@ function ReceptionistTabNavigator() {
     );
 }
 
-// admin
+// ============================================
+// ADMIN NAVIGATION
+// ============================================
 
-function HomeStack() {
+function AdminHomeStack() {
     return (
         <Stack.Navigator screenOptions={{ headerShown: false }}>
             <Stack.Screen name="AdminHomeMain" component={AdminHomeScreen} />
@@ -281,7 +283,7 @@ function HomeStack() {
     );
 }
 
-function ProfileStack() {
+function AdminProfileStack() {
     return (
         <Stack.Navigator screenOptions={{ headerShown: false }}>
             <Stack.Screen name="AdminProfileMain" component={AdminProfileScreen} />
@@ -300,13 +302,13 @@ function AdminTabNavigator() {
                 tabBarStyle: {
                     paddingBottom: 5,
                     paddingTop: 5,
-                    height: 80,
+                    height: 60,
                 },
             }}
         >
             <Tab.Screen
                 name="AdminHome"
-                component={HomeStack}
+                component={AdminHomeStack}
                 options={{
                     tabBarLabel: 'Home',
                     tabBarIcon: ({ color, size }) => (
@@ -334,7 +336,7 @@ function AdminTabNavigator() {
             />
             <Tab.Screen
                 name="AdminProfile"
-                component={ProfileStack}
+                component={AdminProfileStack}
                 options={{
                     tabBarLabel: 'Profile',
                     tabBarIcon: ({ color, size }) => (
@@ -342,16 +344,16 @@ function AdminTabNavigator() {
                     ),
                 }}
             />
-        
         </Tab.Navigator>
     );
 }
 
-// Main Stack Navigator
+// ============================================
+// MAIN APP NAVIGATOR
+// ============================================
 
 export default function AppNavigator() {
     const { user, isLoading } = useAuth();
-
 
     if (isLoading) {
         return (
@@ -365,7 +367,7 @@ export default function AppNavigator() {
     }
 
     return (
-        <NavigationContainer>
+//         <NavigationContainer>
             <Stack.Navigator screenOptions={{ headerShown: false }}>
                 {!user ? (
                     // ========== NOT LOGGED IN ==========
@@ -377,7 +379,7 @@ export default function AppNavigator() {
                     // ========== LOGGED IN - ROLE BASED ==========
                     <>
                         {user?.role.toLowerCase() === 'patient' ? (
-                            <Stack.Screen name="PatientApp" component={PatientStackNavigator} />
+                            <Stack.Screen name="PatientApp" component={PatientTabNavigator} />
                         ) : user?.role.toLowerCase() === 'doctor' ? (
                             <Stack.Screen name="DoctorApp" component={DoctorTabNavigator} />
                         ) : user?.role.toLowerCase() === 'receptionist' ? (
@@ -390,9 +392,6 @@ export default function AppNavigator() {
                     </>
                 )}
             </Stack.Navigator>
-        </NavigationContainer>
+//         </NavigationContainer>
     );
 }
-
-
-

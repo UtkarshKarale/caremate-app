@@ -58,10 +58,13 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
             setIsLoading(true);
 
             const response = await apiLogin(email, password);
-            const { token, user: userData, role } = response;
+            const { token } = response;
+            await saveToken(token, response.role);
 
-            await saveToken(token, role);
-            setUser({ ...userData, role });
+            const decodedToken: { exp: number, userId: string, role: string } = jwtDecode(token);
+            const userResponse = await api.get(`/user/${decodedToken.userId}/lookup`);
+            const role = decodedToken.role.replace(/[\[\]]/g, '') as User['role'];
+            setUser({ ...userResponse.data, role });
 
         } catch (error: any) {
             console.error('Login error:', error);

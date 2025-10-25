@@ -2,7 +2,7 @@ import React from 'react';
 import { Box, Text, HStack, VStack, ScrollView, Pressable, Badge, Icon } from 'native-base';
 import { MaterialIcons } from '@expo/vector-icons';
 import { upcomingAppointments } from '@/app/src/data/doctor';
-import {useAuth} from "@/app/src/screens/context/AuthContext";
+import { useAuth } from "@/app/src/screens/context/AuthContext";
 
 export default function HomeScreen({ navigation }: any) {
     const { user } = useAuth();
@@ -13,7 +13,7 @@ export default function HomeScreen({ navigation }: any) {
             <Box bg="blue.600" pb={6} pt={4} px={4} borderBottomLeftRadius={24} borderBottomRightRadius={24}>
                 <HStack justifyContent="space-between" alignItems="center" mb={6}>
                     <Box>
-                        <Text fontSize="2xl" fontWeight="bold" color="white">Hello, {user?.name}</Text>
+                        <Text mt={5} fontSize="2xl" fontWeight="bold" color="white">Hello, {user?.fullName}</Text>
                         <Text fontSize="sm" color="blue.100">Welcome back!</Text>
                     </Box>
                     <HStack space={2}>
@@ -50,7 +50,7 @@ export default function HomeScreen({ navigation }: any) {
                         p={6}
                         borderRadius="2xl"
                         shadow={1}
-                        onPress={() => navigation.navigate('PatientApp', { screen: 'DoctorSelection' })}
+                        onPress={() => navigation.navigate('DoctorSelection')}
                     >
                         <VStack alignItems="center" space={2}>
                             <Box bg="blue.100" p={4} borderRadius="2xl">
@@ -60,7 +60,14 @@ export default function HomeScreen({ navigation }: any) {
                         </VStack>
                     </Pressable>
 
-                    <Pressable flex={1} bg="white" p={6} borderRadius="2xl" shadow={1} onPress={() => navigation.navigate('PatientApp', { screen: 'DoctorSelection' })}>
+                    <Pressable
+                        flex={1}
+                        bg="white"
+                        p={6}
+                        borderRadius="2xl"
+                        shadow={1}
+                        onPress={() => navigation.navigate('DoctorSelection')}
+                    >
                         <VStack alignItems="center" space={2}>
                             <Box bg="green.100" p={4} borderRadius="2xl">
                                 <Icon as={MaterialIcons} name="medical-services" size={7} color="green.600" />
@@ -77,7 +84,7 @@ export default function HomeScreen({ navigation }: any) {
                         p={6}
                         borderRadius="2xl"
                         shadow={1}
-                        onPress={() => navigation.navigate('MedicalRecords')}
+                        onPress={() => navigation.navigate('Records')}
                     >
                         <VStack alignItems="center" space={2}>
                             <Box bg="purple.100" p={4} borderRadius="2xl">
@@ -87,7 +94,17 @@ export default function HomeScreen({ navigation }: any) {
                         </VStack>
                     </Pressable>
 
-                    <Pressable flex={1} bg="white" p={6} borderRadius="2xl" shadow={1}>
+                    <Pressable
+                        flex={1}
+                        bg="white"
+                        p={6}
+                        borderRadius="2xl"
+                        shadow={1}
+                        onPress={() => {
+                            // You can add emergency call functionality here
+                            console.log('Emergency call');
+                        }}
+                    >
                         <VStack alignItems="center" space={2}>
                             <Box bg="orange.100" p={4} borderRadius="2xl">
                                 <Icon as={MaterialIcons} name="phone" size={7} color="orange.600" />
@@ -102,35 +119,39 @@ export default function HomeScreen({ navigation }: any) {
             <Box px={4} pb={24}>
                 <HStack justifyContent="space-between" alignItems="center" mb={4}>
                     <Text fontSize="lg" fontWeight="bold" color="gray.800">Upcoming Appointments</Text>
-                    <Text fontSize="sm" fontWeight="semibold" color="blue.600">View All</Text>
+                    <Pressable onPress={() => navigation.navigate('Records')}>
+                        <Text fontSize="sm" fontWeight="semibold" color="blue.600">View All</Text>
+                    </Pressable>
                 </HStack>
 
                 {upcomingAppointments.map(apt => (
-                    <Box key={apt.id} bg="white" p={4} borderRadius="xl" shadow={1} mb={3}>
-                        <HStack justifyContent="space-between" alignItems="flex-start">
-                            <VStack flex={1}>
-                                <Text fontWeight="bold" fontSize="md">{apt.doctor}</Text>
-                                <Text fontSize="sm" color="gray.600">{apt.specialty}</Text>
-                                <HStack alignItems="center" space={1} mt={2}>
-                                    <Icon as={MaterialIcons} name="access-time" size={4} color="gray.500" />
-                                    <Text fontSize="sm" color="gray.500">{apt.time}</Text>
-                                </HStack>
-                            </VStack>
-                            <Badge
-                                bg={apt.status === 'Confirmed' ? 'green.100' : 'blue.100'}
-                                _text={{
-                                    color: apt.status === 'Confirmed' ? 'green.700' : 'blue.700',
-                                    fontWeight: 'semibold',
-                                    fontSize: 'xs'
-                                }}
-                                borderRadius="full"
-                                px={3}
-                                py={1}
-                            >
-                                {apt.status}
-                            </Badge>
-                        </HStack>
-                    </Box>
+                    <Pressable key={apt.id}>
+                        <Box bg="white" p={4} borderRadius="xl" shadow={1} mb={3}>
+                            <HStack justifyContent="space-between" alignItems="flex-start">
+                                <VStack flex={1}>
+                                    <Text fontWeight="bold" fontSize="md">{apt.doctor}</Text>
+                                    <Text fontSize="sm" color="gray.600">{apt.specialty}</Text>
+                                    <HStack alignItems="center" space={1} mt={2}>
+                                        <Icon as={MaterialIcons} name="access-time" size={4} color="gray.500" />
+                                        <Text fontSize="sm" color="gray.500">{apt.time}</Text>
+                                    </HStack>
+                                </VStack>
+                                <Badge
+                                    bg={apt.status === 'Confirmed' ? 'green.100' : 'blue.100'}
+                                    _text={{
+                                        color: apt.status === 'Confirmed' ? 'green.700' : 'blue.700',
+                                        fontWeight: 'semibold',
+                                        fontSize: 'xs'
+                                    }}
+                                    borderRadius="full"
+                                    px={3}
+                                    py={1}
+                                >
+                                    {apt.status}
+                                </Badge>
+                            </HStack>
+                        </Box>
+                    </Pressable>
                 ))}
             </Box>
         </ScrollView>

@@ -27,8 +27,8 @@ export default function MedicalRecordsScreen() {
     return (
         <ScrollView flex={1} bg="gray.50">
             {/* Header */}
-            <Box bg="blue.600" pb={6} pt={4} px={4} borderBottomLeftRadius={24} borderBottomRightRadius={24}>
-                <Text fontSize="2xl" fontWeight="bold" color="white">Medical Records</Text>
+            <Box  bg="blue.600" pb={6} pt={4} px={4} borderBottomLeftRadius={24} borderBottomRightRadius={24}>
+                <Text mt={5} fontSize="2xl" fontWeight="bold" color="white">Medical Records</Text>
             </Box>
 
             <Box p={4} pb={24}>

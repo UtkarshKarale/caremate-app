@@ -125,4 +125,15 @@ export const getAllAppointments = async () => {
 };
 
 
+export const getUserAppointments = async (userId: string) => {
+  try {
+    const response = await api.get(`/appointments/user/${userId}`);
+    return response.data;
+  } catch (error) {
+    // @ts-ignore
+    console.error('Get user appointments error:', error.response?.data || error.message);
+    throw error;
+  }
+};
+
 export default api;
