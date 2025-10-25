@@ -1,13 +1,8 @@
-import React from 'react';
-import { Box, Text, HStack, VStack, ScrollView, Pressable, Icon, Avatar } from 'native-base';
+import React, { useState, useEffect } from 'react';
+import { Box, Text, HStack, VStack, ScrollView, Pressable, Icon, Avatar, Spinner } from 'native-base';
 import { MaterialIcons } from '@expo/vector-icons';
-
-const systemStats = [
-    { id: '1', label: 'Total Users', value: '1,234', icon: 'people', color: 'blue.600', bgColor: 'blue.100' },
-    { id: '2', label: 'Doctors', value: '45', icon: 'medical-services', color: 'green.600', bgColor: 'green.100' },
-    { id: '3', label: 'Patients', value: '1,150', icon: 'person', color: 'purple.600', bgColor: 'purple.100' },
-    { id: '4', label: 'Revenue', value: '$125K', icon: 'attach-money', color: 'orange.600', bgColor: 'orange.100' },
-];
+import { getAllUsers } from '@/lib/api';
+import { useAuth } from '../context/AuthContext';
 
 const recentActivities = [
     { id: '1', user: 'Dr. Sarah Johnson', action: 'Completed 5 appointments', time: '10 mins ago', avatar: 'https://images.unsplash.com/photo-1559839734-2b716b17f7d1?w=400' },
@@ -16,12 +11,44 @@ const recentActivities = [
 ];
 
 export default function AdminHomeScreen({ navigation }: any) {
+    const [users, setUsers] = useState<any[]>([]);
+    const [loading, setLoading] = useState(true);
+    const { user: adminUser } = useAuth();
+
+    useEffect(() => {
+        const fetchUsers = async () => {
+            setLoading(true);
+            try {
+                const fetchedUsers = (await getAllUsers()) || [];
+                const otherUsers = fetchedUsers.filter((u: any) => u.id !== adminUser?.id);
+                setUsers(otherUsers);
+            } catch (error) {
+                console.error('Error fetching users:', error);
+            } finally {
+                setLoading(false);
+            }
+        };
+
+        fetchUsers();
+    }, [adminUser?.id]);
+
+    const totalUsers = users.length;
+    const totalDoctors = users.filter(u => u.roles.includes('DOCTOR')).length;
+    const totalPatients = users.filter(u => u.roles.includes('PATIENT')).length;
+
+    const systemStats = [
+        { id: '1', label: 'Total Users', value: totalUsers, icon: 'people', color: 'blue.600', bgColor: 'blue.100' },
+        { id: '2', label: 'Doctors', value: totalDoctors, icon: 'medical-services', color: 'green.600', bgColor: 'green.100' },
+        { id: '3', label: 'Patients', value: totalPatients, icon: 'person', color: 'purple.600', bgColor: 'purple.100' },
+        { id: '4', label: 'Revenue', value: '$0', icon: 'attach-money', color: 'orange.600', bgColor: 'orange.100' },
+    ];
+
     return (
         <ScrollView flex={1} bg="gray.50">
             {/* Header */}
             <Box bg="red.600" pb={6} pt={4} px={4} borderBottomLeftRadius={24} borderBottomRightRadius={24}>
                 <HStack justifyContent="space-between" alignItems="center" mb={6}>
-                    <VStack>
+                    <VStack mt={5}>
                         <Text fontSize="sm" color="red.100">Welcome back,</Text>
                         <Text fontSize="2xl" fontWeight="bold" color="white">Admin Dashboard</Text>
                         <Text fontSize="sm" color="red.100">System Overview</Text>
@@ -30,28 +57,34 @@ export default function AdminHomeScreen({ navigation }: any) {
                         <Pressable bg="red.500" p={2} borderRadius="full">
                             <Icon as={MaterialIcons} name="notifications" size={5} color="white" />
                         </Pressable>
-                        <Pressable bg="red.500" p={2} borderRadius="full">
+                        <Pressable bg="red.500" p={2} borderRadius="full" onPress={() => navigation.navigate('AdminProfile')}>
                             <Icon as={MaterialIcons} name="settings" size={5} color="white" />
                         </Pressable>
                     </HStack>
                 </HStack>
 
                 {/* Stats Cards */}
-                <HStack space={3} flexWrap="wrap">
-                    {systemStats.map(stat => (
-                        <Box key={stat.id} flex={1} minW="45%" bg="white" p={4} borderRadius="xl" shadow={2} mb={3}>
-                            <HStack space={3} alignItems="center">
-                                <Box bg={stat.bgColor} p={3} borderRadius="xl">
-                                    <Icon as={MaterialIcons} name={stat.icon} size={6} color={stat.color} />
-                                </Box>
-                                <VStack>
-                                    <Text fontSize="2xl" fontWeight="bold" color={stat.color}>{stat.value}</Text>
-                                    <Text fontSize="xs" color="gray.600">{stat.label}</Text>
-                                </VStack>
-                            </HStack>
-                        </Box>
-                    ))}
-                </HStack>
+                {loading ? (
+                    <HStack justifyContent="center" alignItems="center" h={100}>
+                        <Spinner color="white" size="lg" />
+                    </HStack>
+                ) : (
+                    <HStack space={3} flexWrap="wrap">
+                        {systemStats.map(stat => (
+                            <Box key={stat.id} flex={1} minW="45%" bg="white" p={4} borderRadius="xl" shadow={2} mb={3}>
+                                <HStack space={3} alignItems="center">
+                                    <Box bg={stat.bgColor} p={3} borderRadius="xl">
+                                        <Icon as={MaterialIcons} name={stat.icon} size={6} color={stat.color} />
+                                    </Box>
+                                    <VStack>
+                                        <Text fontSize="2xl" fontWeight="bold" color={stat.color}>{stat.value}</Text>
+                                        <Text fontSize="xs" color="gray.600">{stat.label}</Text>
+                                    </VStack>
+                                </HStack>
+                            </Box>
+                        ))}
+                    </HStack>
+                )}
             </Box>
 
             {/* Quick Actions */}
@@ -64,7 +97,7 @@ export default function AdminHomeScreen({ navigation }: any) {
                         p={6}
                         borderRadius="2xl"
                         shadow={1}
-                        onPress={() => navigation.navigate('UserManagement')}
+                        onPress={() => navigation.navigate('Users')}
                     >
                         <VStack alignItems="center" space={2}>
                             <Box bg="blue.100" p={4} borderRadius="2xl">
@@ -80,7 +113,7 @@ export default function AdminHomeScreen({ navigation }: any) {
                         p={6}
                         borderRadius="2xl"
                         shadow={1}
-                        onPress={() => navigation.navigate('ReportsAnalytics')}
+                        onPress={() => navigation.navigate('Reports')}
                     >
                         <VStack alignItems="center" space={2}>
                             <Box bg="green.100" p={4} borderRadius="2xl">
@@ -98,7 +131,7 @@ export default function AdminHomeScreen({ navigation }: any) {
                         p={6}
                         borderRadius="2xl"
                         shadow={1}
-                        onPress={() => navigation.navigate('SystemSettings')}
+                        onPress={() => navigation.navigate('AdminProfile')}
                     >
                         <VStack alignItems="center" space={2}>
                             <Box bg="purple.100" p={4} borderRadius="2xl">
@@ -114,7 +147,7 @@ export default function AdminHomeScreen({ navigation }: any) {
                         p={6}
                         borderRadius="2xl"
                         shadow={1}
-                        onPress={() => navigation.navigate('BillingOverview')}
+                        onPress={() => navigation.navigate('Reports')}
                     >
                         <VStack alignItems="center" space={2}>
                             <Box bg="orange.100" p={4} borderRadius="2xl">

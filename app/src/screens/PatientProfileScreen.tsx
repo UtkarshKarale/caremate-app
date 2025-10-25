@@ -1,12 +1,11 @@
 import React from 'react';
 import { Box, Text, HStack, VStack, ScrollView, Pressable, Icon, Button } from 'native-base';
 import { MaterialIcons } from '@expo/vector-icons';
-import { medicalHistory } from '@/app/src/data/doctor';
-
 import { useAuth } from '@/app/src/screens/context/AuthContext';
 
 export default function PatientProfileScreen() {
-    const { logout } = useAuth();
+    const { logout, user, isLoading } = useAuth();
+
     return (
         <ScrollView flex={1} bg="gray.50">
             {/* Header */}
@@ -20,76 +19,82 @@ export default function PatientProfileScreen() {
             </Box>
 
             {/* Profile Info */}
-            <Box p={4}>
-                <Box bg="white" borderRadius="xl" shadow={1} p={6} mb={4}>
-                    <HStack space={4} mb={4}>
-                        <VStack flex={1}>
-                            <Text fontSize="sm" color="gray.500">ID</Text>
-                            <Text fontWeight="semibold">10001</Text>
-                        </VStack>
-                        <VStack flex={1}>
-                            <Text fontSize="sm" color="gray.500">Date of Birth</Text>
-                            <Text fontWeight="semibold">June 15, 1985</Text>
-                        </VStack>
-                    </HStack>
-                    <HStack space={4}>
-                        <VStack flex={1}>
-                            <Text fontSize="sm" color="gray.500">Gender</Text>
-                            <Text fontWeight="semibold">Male</Text>
-                        </VStack>
-                        <VStack flex={1}>
-                            <Text fontSize="sm" color="gray.500">Blood Type</Text>
-                            <Text fontWeight="semibold">O+</Text>
-                        </VStack>
-                    </HStack>
-                </Box>
-
-                {/* Medical History */}
-                <Box bg="white" borderRadius="xl" shadow={1} p={6} mb={4}>
-                    <Text fontSize="lg" fontWeight="bold" mb={4}>Medical History</Text>
-                    {medicalHistory.map((item, idx) => (
-                        <Box key={idx} borderBottomWidth={idx < medicalHistory.length - 1 ? 1 : 0} borderBottomColor="gray.200" py={3}>
-                            <HStack justifyContent="space-between" alignItems="flex-start">
-                                <VStack>
-                                    <Text fontWeight="semibold">{item.condition}</Text>
-                                    <Text fontSize="sm" color="gray.500">Diagnosed: {item.diagnosed}</Text>
-                                </VStack>
-                                <Text color="blue.600" fontSize="sm" fontWeight="semibold">{item.status}</Text>
-                            </HStack>
-                        </Box>
-                    ))}
-                </Box>
-
-                {/* Insurance Information */}
-                <Box bg="white" borderRadius="xl" shadow={1} p={6} mb={24}>
-                    <Text fontSize="lg" fontWeight="bold" mb={4}>Insurance Information</Text>
-                    <VStack space={3}>
-                        <Box>
-                            <Text fontSize="sm" color="gray.500">Provider</Text>
-                            <Text fontWeight="semibold">HealthCare Plus</Text>
-                        </Box>
-                        <HStack space={4}>
+            {isLoading ? (
+                <Text>Loading profile...</Text>
+            ) : user ? (
+                <Box p={4}>
+                    <Box bg="white" borderRadius="xl" shadow={1} p={6} mb={4}>
+                        <HStack space={4} mb={4}>
                             <VStack flex={1}>
-                                <Text fontSize="sm" color="gray.500">Policy Number</Text>
-                                <Text fontWeight="semibold">HCP-37664321</Text>
+                                <Text fontSize="sm" color="gray.500">ID</Text>
+                                <Text fontWeight="semibold">{user.id}</Text>
                             </VStack>
                             <VStack flex={1}>
-                                <Text fontSize="sm" color="gray.500">Group Number</Text>
-                                <Text fontWeight="semibold">G-98765</Text>
+                                <Text fontSize="sm" color="gray.500">Date of Birth</Text>
+                                <Text fontWeight="semibold">{user.dob}</Text>
                             </VStack>
                         </HStack>
-                        <Box>
-                            <Text fontSize="sm" color="gray.500">Plan Type</Text>
-                            <Text fontWeight="semibold">Premium Coverage</Text>
-                        </Box>
-                        <Box>
-                            <Text fontSize="sm" color="gray.500">Effective Date</Text>
-                            <Text fontWeight="semibold">Jan 1, 2023</Text>
-                        </Box>
-                    </VStack>
+                        <HStack space={4}>
+                            <VStack flex={1}>
+                                <Text fontSize="sm" color="gray.500">Gender</Text>
+                                <Text fontWeight="semibold">{user.gender}</Text>
+                            </VStack>
+                            <VStack flex={1}>
+                                <Text fontSize="sm" color="gray.500">Blood Type</Text>
+                                <Text fontWeight="semibold">{user.bloodType}</Text>
+                            </VStack>
+                        </HStack>
+                    </Box>
+
+                    {/* Medical History */}
+                    <Box bg="white" borderRadius="xl" shadow={1} p={6} mb={4}>
+                        <Text fontSize="lg" fontWeight="bold" mb={4}>Medical History</Text>
+                        {user.medicalHistory?.map((item, idx) => (
+                            <Box key={idx} borderBottomWidth={idx < user.medicalHistory.length - 1 ? 1 : 0} borderBottomColor="gray.200" py={3}>
+                                <HStack justifyContent="space-between" alignItems="flex-start">
+                                    <VStack>
+                                        <Text fontWeight="semibold">{item.condition}</Text>
+                                        <Text fontSize="sm" color="gray.500">Diagnosed: {item.diagnosed}</Text>
+                                    </VStack>
+                                    <Text color="blue.600" fontSize="sm" fontWeight="semibold">{item.status}</Text>
+                                </HStack>
+                            </Box>
+                        ))}
+                    </Box>
+
+                    {/* Insurance Information */}
+                    <Box bg="white" borderRadius="xl" shadow={1} p={6} mb={24}>
+                        <Text fontSize="lg" fontWeight="bold" mb={4}>Insurance Information</Text>
+                        <VStack space={3}>
+                            <Box>
+                                <Text fontSize="sm" color="gray.500">Provider</Text>
+                                <Text fontWeight="semibold">{user.insurance?.provider}</Text>
+                            </Box>
+                            <HStack space={4}>
+                                <VStack flex={1}>
+                                    <Text fontSize="sm" color="gray.500">Policy Number</Text>
+                                    <Text fontWeight="semibold">{user.insurance?.policyNumber}</Text>
+                                </VStack>
+                                <VStack flex={1}>
+                                    <Text fontSize="sm" color="gray.500">Group Number</Text>
+                                    <Text fontWeight="semibold">{user.insurance?.groupNumber}</Text>
+                                </VStack>
+                            </HStack>
+                            <Box>
+                                <Text fontSize="sm" color="gray.500">Plan Type</Text>
+                                <Text fontWeight="semibold">{user.insurance?.planType}</Text>
+                            </Box>
+                            <Box>
+                                <Text fontSize="sm" color="gray.500">Effective Date</Text>
+                                <Text fontWeight="semibold">{user.insurance?.effectiveDate}</Text>
+                            </Box>
+                        </VStack>
+                    </Box>
+                    <Button onPress={logout} colorScheme="red">Logout</Button>
                 </Box>
-                <Button onPress={logout} colorScheme="red">Logout</Button>
-            </Box>
+            ) : (
+                <Text>No patient data found.</Text>
+            )}
         </ScrollView>
     );
 }

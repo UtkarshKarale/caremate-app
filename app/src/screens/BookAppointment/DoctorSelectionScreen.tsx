@@ -7,16 +7,20 @@ import { TextInput, StyleSheet, View } from 'react-native';
 export default function DoctorSelectionScreen({ navigation }: any) {
     const [selectedSpecialty, setSelectedSpecialty] = useState('All Specialties');
     const [searchQuery, setSearchQuery] = useState('');
-    const [doctors, setDoctors] = useState([]);
-    const [specialties, setSpecialties] = useState([]);
+    const [doctors, setDoctors] = useState<any[]>([]);
+    const [specialties, setSpecialties] = useState<string[]>([]);
 
     useEffect(() => {
         const fetchDoctors = async () => {
             try {
                 const fetchedDoctors = await getAllDoctors();
                 setDoctors(fetchedDoctors);
-                const uniqueSpecialties = ['All Specialties', ...new Set(fetchedDoctors.map(doc => doc.specialty))];
-                // @ts-ignore
+                console.log('Fetched doctors:', fetchedDoctors);
+
+                const uniqueSpecialties = [
+                    'All Specialties',
+                    ...new Set(fetchedDoctors.map(doc => doc.specialist ?? 'Unknown'))
+                ];
                 setSpecialties(uniqueSpecialties);
             } catch (error) {
                 console.error('Error fetching doctors:', error);
@@ -27,9 +31,27 @@ export default function DoctorSelectionScreen({ navigation }: any) {
     }, []);
 
     const filteredDoctors = doctors.filter(doctor => {
-        const matchesSpecialty = selectedSpecialty === 'All Specialties' || doctor.specialty === selectedSpecialty;
-        const matchesSearch = doctor.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-            doctor.specialty.toLowerCase().includes(searchQuery.toLowerCase());
+        const name = doctor.fullName ?? '';
+        const specialty = doctor.specialist ?? '';
+
+        const matchesSpecialty =
+            selectedSpecialty === 'All Specialties' ||
+            specialty === selectedSpecialty ||
+            specialty.includes(selectedSpecialty);
+
+        const matchesSearch =
+            name.toLowerCase().includes(searchQuery?.toLowerCase()) ||
+            specialty.toLowerCase().includes(searchQuery?.toLowerCase());
+
+        console.log(
+            'Filtering doctor:',
+            name,
+            'Matches Specialty:',
+            matchesSpecialty,
+            'Matches Search:',
+            matchesSearch
+        );
+
         return matchesSpecialty && matchesSearch;
     });
 
@@ -42,8 +64,12 @@ export default function DoctorSelectionScreen({ navigation }: any) {
                         <Icon as={MaterialIcons} name="arrow-back" size={6} color="white" />
                     </Pressable>
                     <VStack flex={1}>
-                        <Text fontSize="2xl" fontWeight="bold" color="white">Book Appointment</Text>
-                        <Text fontSize="sm" color="blue.100">Find the right doctor for you</Text>
+                        <Text fontSize="2xl" fontWeight="bold" color="white">
+                            Book Appointment
+                        </Text>
+                        <Text fontSize="sm" color="blue.100">
+                            Find the right doctor for you
+                        </Text>
                     </VStack>
                 </HStack>
             </Box>
@@ -87,7 +113,9 @@ export default function DoctorSelectionScreen({ navigation }: any) {
                     </HStack>
                 </ScrollView>
 
-                <Text fontSize="lg" fontWeight="bold" mb={4}>{filteredDoctors.length} Doctors Available</Text>
+                <Text fontSize="lg" fontWeight="bold" mb={4}>
+                    {filteredDoctors.length} Doctors Available
+                </Text>
             </Box>
 
             {/* Doctor Cards */}
@@ -99,27 +127,37 @@ export default function DoctorSelectionScreen({ navigation }: any) {
                     >
                         <Box bg="white" borderRadius="xl" shadow={2} p={4} mb={4}>
                             <HStack space={4}>
-                                <Avatar size="lg" source={{ uri: doctor.image }} />
+                                <Avatar size="lg" source={{ uri: doctor.image || undefined }} />
                                 <VStack flex={1}>
                                     <HStack justifyContent="space-between" alignItems="flex-start" mb={1}>
-                                        <Text fontWeight="bold" fontSize="md" flex={1}>{doctor.name}</Text>
+                                        <Text fontWeight="bold" fontSize="md" flex={1}>
+                                            {doctor.fullName}
+                                        </Text>
                                         <HStack alignItems="center" space={1}>
                                             <Icon as={MaterialIcons} name="star" size={4} color="yellow.400" />
-                                            <Text fontSize="sm" fontWeight="semibold">{doctor.rating}</Text>
+                                            <Text fontSize="sm" fontWeight="semibold">
+                                                {doctor.rating ?? '-'}
+                                            </Text>
                                             <Icon as={MaterialIcons} name="chevron-right" size={5} color="gray.400" />
                                         </HStack>
                                     </HStack>
                                     <HStack alignItems="center" space={1} mb={1}>
                                         <Icon as={MaterialIcons} name="medical-services" size={3} color="gray.600" />
-                                        <Text fontSize="sm" color="gray.600">{doctor.specialty}</Text>
+                                        <Text fontSize="sm" color="gray.600">
+                                            {doctor.specialist}
+                                        </Text>
                                     </HStack>
                                     <HStack alignItems="center" space={1} mb={1}>
                                         <Icon as={MaterialIcons} name="location-on" size={3} color="gray.600" />
-                                        <Text fontSize="sm" color="gray.600" numberOfLines={1}>{doctor.hospital}</Text>
+                                        <Text fontSize="sm" color="gray.600" numberOfLines={1}>
+                                            {doctor.hospital ?? '-'}
+                                        </Text>
                                     </HStack>
                                     <HStack alignItems="center" space={1}>
                                         <Icon as={MaterialIcons} name="work" size={3} color="gray.600" />
-                                        <Text fontSize="sm" color="gray.600">{doctor.experience} years experience</Text>
+                                        <Text fontSize="sm" color="gray.600">
+                                            {doctor.experience ?? '-'} years experience
+                                        </Text>
                                     </HStack>
                                 </VStack>
                             </HStack>
@@ -144,7 +182,7 @@ const styles = StyleSheet.create({
             width: 0,
             height: 1,
         },
-        shadowOpacity: 0.20,
+        shadowOpacity: 0.2,
         shadowRadius: 1.41,
         elevation: 2,
     },

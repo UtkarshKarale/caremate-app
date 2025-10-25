@@ -42,6 +42,7 @@ import ReceptionistAppointmentsScreen from '../screens/Receptionist/Receptionist
 import PatientRegistryScreen from '../screens/Receptionist/PatientRegistryScreen';
 import ReceptionistProfileScreen from '../screens/Receptionist/ReceptionistProfileScreen';
 import UserManagementScreen from "@/app/src/screens/Admin/UserManagementScreen";
+import EditUserScreen from "@/app/src/screens/Admin/EditUserScreen";
 import AdminHomeScreen from "@/app/src/screens/Admin/AdminHomeScreen";
 import {useAuth} from "@/app/src/screens/context/AuthContext";
 
@@ -118,7 +119,7 @@ function PatientTabNavigator() {
                         <Icon as={MaterialIcons} name="logout" size={size} color={color} />
                     ),
                     tabBarButton: (props) => (
-                        <Pressable {...props} onPress={logout} />
+                    <Pressable {...props} onPress={logout} />
                     ),
                 }}
             />
@@ -280,6 +281,15 @@ function HomeStack() {
     );
 }
 
+function ProfileStack() {
+    return (
+        <Stack.Navigator screenOptions={{ headerShown: false }}>
+            <Stack.Screen name="AdminProfileMain" component={AdminProfileScreen} />
+            <Stack.Screen name="EditUserScreen" component={EditUserScreen} />
+        </Stack.Navigator>
+    );
+}
+
 function AdminTabNavigator() {
     return (
         <Tab.Navigator
@@ -290,7 +300,7 @@ function AdminTabNavigator() {
                 tabBarStyle: {
                     paddingBottom: 5,
                     paddingTop: 5,
-                    height: 60,
+                    height: 80,
                 },
             }}
         >
@@ -324,7 +334,7 @@ function AdminTabNavigator() {
             />
             <Tab.Screen
                 name="AdminProfile"
-                component={AdminProfileScreen}
+                component={ProfileStack}
                 options={{
                     tabBarLabel: 'Profile',
                     tabBarIcon: ({ color, size }) => (

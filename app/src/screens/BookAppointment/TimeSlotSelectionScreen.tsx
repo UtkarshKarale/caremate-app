@@ -1,13 +1,46 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Box, Text, HStack, VStack, ScrollView, Pressable, Avatar, Icon, Radio, Button } from 'native-base';
 import { MaterialIcons } from '@expo/vector-icons';
-import { dates } from '@/app/src/data/doctor';
+import { getDoctorTodaysAppointments } from '../../../../lib/api';
+
+const allTimeSlots = [
+    '09:00 AM', '09:30 AM', '10:00 AM', '10:30 AM', '11:00 AM', '11:30 AM',
+    '01:00 PM', '01:30 PM', '02:00 PM', '02:30 PM', '03:00 PM', '03:30 PM',
+];
+
+const dates = [
+    { id: 1, day: 'Mon', date: 1, month: 'Jan' },
+    { id: 2, day: 'Tue', date: 2, month: 'Jan' },
+    { id: 3, day: 'Wed', date: 3, month: 'Jan' },
+    { id: 4, day: 'Thu', date: 4, month: 'Jan' },
+    { id: 5, day: 'Fri', date: 5, month: 'Jan' },
+];
 
 export default function TimeSlotSelectionScreen({ navigation, route }: any) {
     const { doctor } = route.params;
     const [selectedDate, setSelectedDate] = useState(dates[0].id);
     const [selectedTime, setSelectedTime] = useState('');
     const [appointmentType, setAppointmentType] = useState('in-person');
+    const [availableSlots, setAvailableSlots] = useState([]);
+    const [loading, setLoading] = useState(true);
+
+    useEffect(() => {
+        const fetchAppointments = async () => {
+            try {
+                const appointments = await getDoctorTodaysAppointments(doctor.id);
+                const bookedSlots = appointments.map(app => app.time);
+                const available = allTimeSlots.filter(slot => !bookedSlots.includes(slot));
+                // @ts-ignore
+                setAvailableSlots(available);
+            } catch (error) {
+                console.error('Error fetching appointments:', error);
+            } finally {
+                setLoading(false);
+            }
+        };
+
+        fetchAppointments();
+    }, [doctor.id]);
 
     const handleConfirm = () => {
         const selectedDateObj = dates.find(d => d.id === selectedDate);
@@ -103,32 +136,36 @@ export default function TimeSlotSelectionScreen({ navigation, route }: any) {
                 {/* Time Slots */}
                 <Box mb={4}>
                     <Text fontSize="lg" fontWeight="bold" mb={3}>Available Time Slots</Text>
-                    <HStack flexWrap="wrap" space={3}>
-                        {doctor.availableSlots.map((slot :any, idx : any) => (
-                            <Pressable
-                                key={idx}
-                                onPress={() => setSelectedTime(slot)}
-                                mb={3}
-                            >
-                                <Box
-                                    bg={selectedTime === slot ? 'blue.600' : 'white'}
-                                    borderRadius="lg"
-                                    px={5}
-                                    py={3}
-                                    borderWidth={selectedTime === slot ? 0 : 1}
-                                    borderColor="gray.200"
-                                    shadow={selectedTime === slot ? 2 : 1}
+                    {loading ? (
+                        <Text>Loading available slots...</Text>
+                    ) : (
+                        <HStack flexWrap="wrap" space={3}>
+                            {availableSlots.map((slot, idx) => (
+                                <Pressable
+                                    key={idx}
+                                    onPress={() => setSelectedTime(slot)}
+                                    mb={3}
                                 >
-                                    <Text
-                                        fontWeight="semibold"
-                                        color={selectedTime === slot ? 'white' : 'gray.700'}
+                                    <Box
+                                        bg={selectedTime === slot ? 'blue.600' : 'white'}
+                                        borderRadius="lg"
+                                        px={5}
+                                        py={3}
+                                        borderWidth={selectedTime === slot ? 0 : 1}
+                                        borderColor="gray.200"
+                                        shadow={selectedTime === slot ? 2 : 1}
                                     >
-                                        {slot}
-                                    </Text>
-                                </Box>
-                            </Pressable>
-                        ))}
-                    </HStack>
+                                        <Text
+                                            fontWeight="semibold"
+                                            color={selectedTime === slot ? 'white' : 'gray.700'}
+                                        >
+                                            {slot}
+                                        </Text>
+                                    </Box>
+                                </Pressable>
+                            ))}
+                        </HStack>
+                    )}
                 </Box>
 
                 {/* Appointment Type */}

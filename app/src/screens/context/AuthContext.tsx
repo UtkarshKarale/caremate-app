@@ -1,14 +1,13 @@
 import React, { createContext, useState, useContext, useEffect } from 'react';
-import AsyncStorage from '@react-native-async-storage/async-storage';
-import axios from 'axios';
+import { deleteToken, getToken, saveToken } from '@/lib/auth';
+import api, { login as apiLogin } from '@/lib/api';
+import { jwtDecode } from 'jwt-decode';
 
-// Updated User type with admin role
 interface User {
     id: string;
     name: string;
     email: string;
-    role: 'patient' | 'doctor' | 'receptionist' | 'admin';  // Added admin
-    token?: string;
+    role: 'patient' | 'doctor' | 'receptionist' | 'admin';
 }
 
 interface AuthContextType {
@@ -31,17 +30,23 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     }, []);
 
     const checkLoginStatus = async () => {
+        setIsLoading(true);
         try {
-            const userData = await AsyncStorage.getItem('user');
-            const token = await AsyncStorage.getItem('token');
-
-            if (userData && token) {
-                const parsedUser = JSON.parse(userData);
-                setUser(parsedUser);
-                axios.defaults.headers.common['Authorization'] = `Bearer ${token}`;
+            const token = await getToken();
+            if (token) {
+                const decodedToken: { exp: number, userId: string, role: string } = jwtDecode(token);
+                if (decodedToken.exp * 1000 < Date.now()) {
+                    await logout();
+                } else {
+                    const userResponse = await api.get(`/user/${decodedToken.userId}/lookup`);
+                    // The role from the token is a string, need to cast it to the User['role'] type
+                    const role = decodedToken.role.replace(/[\[\]]/g, '') as User['role'];
+                    setUser({ ...userResponse.data, role });
+                }
             }
         } catch (error) {
             console.error('Error checking login status:', error);
+            await logout();
         } finally {
             setIsLoading(false);
         }
@@ -52,27 +57,13 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
             setError(null);
             setIsLoading(true);
 
-            // Backend API call
-            const response = await axios.post('http://192.168.0.106:8888/api/user/login', {
-                email,
-                password,
-            });
+            const response = await apiLogin(email, password);
+            const { token, user: userData, role } = response;
 
-            const { role, token, user: userData } = response.data;
-
-            const user = {
-                ...userData,
-                role,
-            };
-
-            await AsyncStorage.setItem('user', JSON.stringify(user));
-            await AsyncStorage.setItem('token', token);
-
-            axios.defaults.headers.common['Authorization'] = `Bearer ${token}`;
-            setUser(user);
+            await saveToken(token, role);
+            setUser({ ...userData, role });
 
         } catch (error: any) {
-
             console.error('Login error:', error);
             setError(error.response?.data?.message || 'Login failed');
             throw error;
@@ -83,9 +74,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
     const logout = async () => {
         try {
-            await AsyncStorage.removeItem('user');
-            await AsyncStorage.removeItem('token');
-            delete axios.defaults.headers.common['Authorization'];
+            await deleteToken();
             setUser(null);
         } catch (error) {
             console.error('Error logging out:', error);

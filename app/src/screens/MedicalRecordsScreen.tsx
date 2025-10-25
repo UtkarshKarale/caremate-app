@@ -1,8 +1,29 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import { Box, Text, HStack, VStack, ScrollView, Icon } from 'native-base';
 import { MaterialIcons } from '@expo/vector-icons';
+import { getPrescriptionsByPatientId } from '../../../lib/api'; // Adjust the import path as needed
 
 export default function MedicalRecordsScreen() {
+    const [prescriptions, setPrescriptions] = useState([]);
+    const [loading, setLoading] = useState(true);
+    const [error, setError] = useState(null);
+
+    useEffect(() => {
+        const fetchPrescriptions = async () => {
+            try {
+                // Assuming a patient ID of 1 for now
+                const data = await getPrescriptionsByPatientId('1');
+                setPrescriptions(data);
+            } catch (err) {
+                setError(err);
+            } finally {
+                setLoading(false);
+            }
+        };
+
+        fetchPrescriptions();
+    }, []);
+
     return (
         <ScrollView flex={1} bg="gray.50">
             {/* Header */}
@@ -30,17 +51,23 @@ export default function MedicalRecordsScreen() {
                 {/* Prescriptions */}
                 <Box bg="white" borderRadius="xl" shadow={1} p={6} mb={4}>
                     <Text fontSize="lg" fontWeight="bold" mb={4}>Prescriptions</Text>
-                    {['Lisinopril 10mg', 'Metformin 500mg', 'Vitamin D3'].map((med, idx) => (
-                        <Box key={idx} borderBottomWidth={idx < 2 ? 1 : 0} borderBottomColor="gray.200" py={3}>
-                            <HStack justifyContent="space-between" alignItems="center">
-                                <VStack>
-                                    <Text fontWeight="semibold">{med}</Text>
-                                    <Text fontSize="sm" color="gray.500">Prescribed by Dr. Sarah Miller</Text>
-                                </VStack>
-                                <Text color="green.600" fontWeight="semibold" fontSize="sm">Active</Text>
-                            </HStack>
-                        </Box>
-                    ))}
+                    {loading ? (
+                        <Text>Loading prescriptions...</Text>
+                    ) : error ? (
+                        <Text>Error fetching prescriptions.</Text>
+                    ) : (
+                        prescriptions.map((med, idx) => (
+                            <Box key={idx} borderBottomWidth={idx < prescriptions.length - 1 ? 1 : 0} borderBottomColor="gray.200" py={3}>
+                                <HStack justifyContent="space-between" alignItems="center">
+                                    <VStack>
+                                        <Text fontWeight="semibold">{med.medication}</Text>
+                                        <Text fontSize="sm" color="gray.500">Prescribed by Dr. {med.doctorName}</Text>
+                                    </VStack>
+                                    <Text color="green.600" fontWeight="semibold" fontSize="sm">{med.status}</Text>
+                                </HStack>
+                            </Box>
+                        ))
+                    )}
                 </Box>
 
                 {/* Documents */}
