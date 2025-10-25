@@ -25,7 +25,7 @@ export default function SignupScreen({ navigation }: any) {
             email,
             mobile : phone,
             password,
-            role: 'PATIENT',
+            roles: 'PATIENT',
         };
 
         try {

@@ -44,6 +44,17 @@ export const login = async (email: string, password: string) => {
   }
 };
 
+export const register = async (userData: any) => {
+  try {
+    const response = await api.post(`/user/register`, userData);
+    return response.data;
+  } catch (error) {
+    // @ts-ignore
+    console.error('Registration error in api.ts:', error.response?.data || error.message);
+    throw error;
+  }
+};
+
 // You can keep the rest of your API functions here.
 // For example:
 export const getAllDoctors = async () => {
@@ -98,6 +109,17 @@ export const applyAppointment = async (appointmentData: any) => {
   } catch (error) {
     // @ts-ignore
     console.error('Apply appointment error:', error.response?.data || error.message);
+    throw error;
+  }
+};
+
+export const getAllAppointments = async () => {
+  try {
+    const response = await api.get(`/appointments/all`);
+    return response.data;
+  } catch (error) {
+    // @ts-ignore
+    console.error('Get all appointments error:', error.response?.data || error.message);
     throw error;
   }
 };
