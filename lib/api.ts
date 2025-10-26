@@ -9,13 +9,13 @@ const api = axios.create({
 });
 
 api.interceptors.request.use(async (config) => {
+  await new Promise((res) => setTimeout(res, 100)); // short delay
   const token = await getToken();
+  console.log('🧩 Token in interceptor:', token);
   if (token) {
     config.headers.Authorization = `Bearer ${token}`;
   }
   return config;
-}, (error) => {
-  return Promise.reject(error);
 });
 
 api.interceptors.response.use(
@@ -24,8 +24,8 @@ api.interceptors.response.use(
     const originalRequest = error.config;
     if (error.response && (error.response.status === 401 || error.response.status === 403) && !originalRequest._retry) {
       originalRequest._retry = true;
-      console.error("Unauthorized/Forbidden request, logging out user.");
-      await deleteToken();
+      console.error("Unauthorized/Forbidden request detected by interceptor.");
+      // Do NOT delete token here. AuthContext will handle logout.
       // You might want to navigate the user to the login screen here.
       // This depends on your navigation setup.
     }
@@ -43,6 +43,7 @@ export const login = async (email: string, password: string) => {
     throw error;
   }
 };
+
 
 export const register = async (userData: any) => {
   try {
@@ -125,13 +126,28 @@ export const getAllAppointments = async () => {
 };
 
 
-export const getUserAppointments = async (userId: string) => {
+export const getUserAppointments = async (userId) => {
+  const token = await getToken();
+  console.log("📡 Sending request GET /appointments/user/" + userId);
+  console.log("🔐 Token attached:", token ? token.slice(0, 25) + "..." : "missing");
+
   try {
-    const response = await api.get(`/appointments/user/${userId}`);
+    const response = await api.get(`/appointments/patient/${userId}`);
+    return response.data;
+  } catch (error) {
+    console.error("❌ Backend response data:", error.response?.data);
+    console.error("❌ Backend status:", error.response?.status);
+    throw error;
+  }
+};
+
+export const getDoctorTodaysAppointments = async (doctorId: string) => {
+  try {
+    const response = await api.get(`/appointments/doctor/${doctorId}/today`);
     return response.data;
   } catch (error) {
     // @ts-ignore
-    console.error('Get user appointments error:', error.response?.data || error.message);
+    console.error('Get doctor todays appointments error:', error.response?.data || error.message);
     throw error;
   }
 };

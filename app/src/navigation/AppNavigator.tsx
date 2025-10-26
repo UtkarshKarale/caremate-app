@@ -32,6 +32,7 @@ import MedicalRecordsScreen from '../screens/MedicalRecordsScreen';
 import DoctorSelectionScreen from '../screens/BookAppointment/DoctorSelectionScreen';
 import TimeSlotSelectionScreen from '../screens/BookAppointment/TimeSlotSelectionScreen';
 import ConfirmationScreen from '../screens/BookAppointment/ConfirmationScreen';
+import SuccessScreen from '../screens/BookAppointment/SuccessScreen';
 
 // Doctor Screens
 import DoctorHomeScreen from '../screens/Doctor/DoctorHomeScreen';
@@ -63,6 +64,7 @@ function HomeStack() {
             <Stack.Screen name="DoctorSelection" component={DoctorSelectionScreen} />
             <Stack.Screen name="TimeSlotSelection" component={TimeSlotSelectionScreen} />
             <Stack.Screen name="Confirmation" component={ConfirmationScreen} />
+            <Stack.Screen name="Success" component={SuccessScreen} />
         </Stack.Navigator>
     );
 }

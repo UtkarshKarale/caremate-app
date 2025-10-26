@@ -8,6 +8,8 @@ export default function HomeScreen({ navigation }: any) {
     const { user, isLoading } = useAuth();
     const [appointments, setAppointments] = useState([]);
     const [loadingAppointments, setLoadingAppointments] = useState(true);
+    const [latestUpcomingAppointment, setLatestUpcomingAppointment] = useState(null);
+    const [allOtherAppointments, setAllOtherAppointments] = useState([]);
 
     useEffect(() => {
         const fetchAppointments = async () => {
@@ -37,6 +39,29 @@ export default function HomeScreen({ navigation }: any) {
 
         fetchAppointments();
     }, [user, isLoading]);
+
+    useEffect(() => {
+        if (appointments.length > 0) {
+            // Sort appointments by time (earliest first)
+            const sortedAppointments = [...appointments].sort((a, b) => {
+                return new Date(a.appointmentTime).getTime() - new Date(b.appointmentTime).getTime();
+            });
+
+            const now = new Date().getTime();
+            const upcoming = sortedAppointments.filter(apt => new Date(apt.appointmentTime).getTime() > now);
+
+            if (upcoming.length > 0) {
+                setLatestUpcomingAppointment(upcoming[0]);
+                setAllOtherAppointments(sortedAppointments); // All other upcoming appointments
+            } else {
+                setLatestUpcomingAppointment(null);
+                setAllOtherAppointments(sortedAppointments); // If no upcoming, show all past appointments in the "All My Appointments" section
+            }
+        } else {
+            setLatestUpcomingAppointment(null);
+            setAllOtherAppointments([]);
+        }
+    }, [appointments]);
 
     const formatAppointmentTime = (timestamp: string) => {
       const date = new Date(timestamp);
@@ -78,7 +103,7 @@ export default function HomeScreen({ navigation }: any) {
                         <Spinner size="lg" color="blue.600" />
                         <Text mt={2} color="gray.600">Loading appointments...</Text>
                     </Box>
-                ) : appointments.length > 0 ? (
+                ) : latestUpcomingAppointment ? (
                     <Box bg="white" p={4} borderRadius="xl" shadow={2}>
                       <HStack space={3} alignItems="center">
                         <Box bg="blue.100" p={3} borderRadius="full">
@@ -86,21 +111,21 @@ export default function HomeScreen({ navigation }: any) {
                         </Box>
                         <VStack flex={1}>
                           <Text fontSize="xs" fontWeight="semibold" color="gray.600">
-                            Upcoming Appointment
+                            Your Next Appointment
                           </Text>
                           <Text fontSize="md" fontWeight="bold" mt={1}>
-                            Dr. {appointments[0].doctor.fullName}
+                            Dr. {latestUpcomingAppointment.doctor.fullName}
                           </Text>
                           <HStack space={2} mt={1} alignItems="center">
                             <Icon as={MaterialIcons} name="calendar-today" size={4} color="gray.500" />
                             <Text fontSize="sm" color="gray.600">
-                              {formatAppointmentTime(appointments[0].appointmentTime)}
+                              {formatAppointmentTime(latestUpcomingAppointment.appointmentTime)}
                             </Text>
                           </HStack>
                           <HStack space={2} mt={1} alignItems="center">
                             <Icon as={MaterialIcons} name="medical-services" size={4} color="gray.500" />
                             <Text fontSize="sm" color="gray.600">
-                              Reason: {appointments[0].disease}
+                              Reason: {latestUpcomingAppointment.disease}
                             </Text>
                           </HStack>
                         </VStack>
@@ -188,10 +213,10 @@ export default function HomeScreen({ navigation }: any) {
                 </HStack>
             </Box>
 
-            {/* Upcoming Appointments */}
+            {/* All My Appointments */}
             <Box px={4} pb={24}>
                 <HStack justifyContent="space-between" alignItems="center" mb={4}>
-                    <Text fontSize="lg" fontWeight="bold" color="gray.800">Upcoming Appointments</Text>
+                    <Text fontSize="lg" fontWeight="bold" color="gray.800">All My Appointments</Text>
                     <Text fontSize="sm" fontWeight="semibold" color="blue.600">View All</Text>
                 </HStack>
 
@@ -200,22 +225,26 @@ export default function HomeScreen({ navigation }: any) {
                         <Spinner size="lg" color="blue.600" />
                         <Text mt={2} color="gray.600">Loading all appointments...</Text>
                     </Box>
-                ) : appointments.length > 0 ? (
-                    appointments.map(apt => (
+                ) : allOtherAppointments.length > 0 ? (
+                    allOtherAppointments.map(apt => (
                         <Box key={apt.id} bg="white" p={4} borderRadius="xl" shadow={1} mb={3}>
                             <HStack justifyContent="space-between" alignItems="flex-start">
                                 <VStack flex={1}>
-                                    <Text fontWeight="bold" fontSize="md">{apt.doctorName}</Text>
-                                    <Text fontSize="sm" color="gray.600">{apt.specialty}</Text>
+                                    <Text fontWeight="bold" fontSize="md">Dr. {apt.doctor.fullName}</Text>
+                                    <Text fontSize="sm" color="gray.600">{apt.doctor.specialist}</Text>
                                     <HStack alignItems="center" space={1} mt={2}>
                                         <Icon as={MaterialIcons} name="access-time" size={4} color="gray.500" />
-                                        <Text fontSize="sm" color="gray.500">{apt.date}, {apt.time}</Text>
+                                        <Text fontSize="sm" color="gray.500">{formatAppointmentTime(apt.appointmentTime)}</Text>
+                                    </HStack>
+                                    <HStack alignItems="center" space={1} mt={2}>
+                                        <Icon as={MaterialIcons} name="medical-services" size={4} color="gray.500" />
+                                        <Text fontSize="sm" color="gray.600">Reason: {apt.disease}</Text>
                                     </HStack>
                                 </VStack>
                                 <Badge
-                                    bg={apt.status === 'Confirmed' ? 'green.100' : 'blue.100'}
+                                    bg={apt.status === 'SCHEDULED' ? 'blue.100' : 'green.100'}
                                     _text={{
-                                        color: apt.status === 'Confirmed' ? 'green.700' : 'blue.700',
+                                        color: apt.status === 'SCHEDULED' ? 'blue.700' : 'green.700',
                                         fontWeight: 'semibold',
                                         fontSize: 'xs'
                                     }}
@@ -228,11 +257,15 @@ export default function HomeScreen({ navigation }: any) {
                             </HStack>
                         </Box>
                     ))
+                ) : (latestUpcomingAppointment ? (
+                    <Box alignItems="center" mt={4}>
+                        <Text color="gray.600">No other upcoming appointments.</Text>
+                    </Box>
                 ) : (
                     <Box alignItems="center" mt={4}>
-                        <Text color="gray.600">No upcoming appointments.</Text>
+                        <Text color="gray.600">No appointments found.</Text>
                     </Box>
-                )}
+                ))}
             </Box>
         </ScrollView>
     );

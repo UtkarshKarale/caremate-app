@@ -19,7 +19,7 @@ export default function DoctorSelectionScreen({ navigation }: any) {
 
                 const uniqueSpecialties = [
                     'All Specialties',
-                    ...new Set(fetchedDoctors.map(doc => doc.specialist ?? 'Unknown'))
+                    ...new Set(fetchedDoctors.map(doc => doc.specialist ?? 'Unknown').filter(s => s !== 'All Specialties'))
                 ];
                 setSpecialties(uniqueSpecialties);
             } catch (error) {
@@ -59,12 +59,12 @@ export default function DoctorSelectionScreen({ navigation }: any) {
         <Box flex={1} bg="gray.50">
             {/* Header */}
             <Box bg="blue.600" pb={6} pt={4} px={4} borderBottomLeftRadius={24} borderBottomRightRadius={24}>
-                <HStack alignItems="center" mb={3}>
+                <HStack  mt={4} alignItems="center" mb={3}>
                     <Pressable mr={3} onPress={() => navigation.goBack()}>
                         <Icon as={MaterialIcons} name="arrow-back" size={6} color="white" />
                     </Pressable>
                     <VStack flex={1}>
-                        <Text fontSize="2xl" fontWeight="bold" color="white">
+                        <Text mt={5} fontSize="2xl" fontWeight="bold" color="white">
                             Book Appointment
                         </Text>
                         <Text fontSize="sm" color="blue.100">
@@ -127,7 +127,9 @@ export default function DoctorSelectionScreen({ navigation }: any) {
                     >
                         <Box bg="white" borderRadius="xl" shadow={2} p={4} mb={4}>
                             <HStack space={4}>
-                                <Avatar size="lg" source={{ uri: doctor.image || undefined }} />
+                                <Avatar bg="green.600" size="lg" source={{ uri: doctor.image || undefined }} >
+                                {doctor.fullName.substring(0, 1).toUpperCase() || 'D'}
+                                </Avatar>
                                 <VStack flex={1}>
                                     <HStack justifyContent="space-between" alignItems="flex-start" mb={1}>
                                         <Text fontWeight="bold" fontSize="md" flex={1}>
@@ -150,7 +152,7 @@ export default function DoctorSelectionScreen({ navigation }: any) {
                                     <HStack alignItems="center" space={1} mb={1}>
                                         <Icon as={MaterialIcons} name="location-on" size={3} color="gray.600" />
                                         <Text fontSize="sm" color="gray.600" numberOfLines={1}>
-                                            {doctor.hospital ?? '-'}
+                                            {doctor.location ?? '-'}
                                         </Text>
                                     </HStack>
                                     <HStack alignItems="center" space={1}>

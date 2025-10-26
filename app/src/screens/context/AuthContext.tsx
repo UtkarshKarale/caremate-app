@@ -29,20 +29,52 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         checkLoginStatus();
     }, []);
 
+    // 🧩 Checks and restores user session from saved token
     const checkLoginStatus = async () => {
         setIsLoading(true);
         try {
             const token = await getToken();
             if (token) {
-                const decodedToken: { exp: number, userId: string, role: string } = jwtDecode(token);
+                const decodedToken: { exp: number; userId: string; role: string } = jwtDecode(token);
+                console.log('Decoded Token in checkLoginStatus:', decodedToken);
+
+                // Expiration check
                 if (decodedToken.exp * 1000 < Date.now()) {
+                    console.log('Token expired, logging out.');
                     await logout();
                 } else {
-                    const userResponse = await api.get(`/user/${decodedToken.userId}/lookup`);
-                    // The role from the token is a string, need to cast it to the User['role'] type
-                    const role = decodedToken.role.replace(/[\[\]]/g, '') as User['role'];
-                    setUser({ ...userResponse.data, role });
+                    try {
+                        const userResponse = await api.get(`/user/${decodedToken.userId}/lookup`);
+                        console.log('User Response Data in checkLoginStatus:', userResponse.data);
+
+                        const role = decodedToken.role.replace(/[\[\]]/g, '') as User['role'];
+
+                        // ✅ Safely merge token + backend data
+                        const finalUser: User = {
+                            id: userResponse.data.id?.toString() ?? decodedToken.userId,
+                            name:
+                                userResponse.data.name ??
+                                userResponse.data.fullName ??
+                                'Unknown User',
+                            email: userResponse.data.email ?? 'unknown@example.com',
+                            role,
+                        };
+
+                        console.log('✅ Final User Object Set in Context:', finalUser);
+                        setUser(finalUser);
+                    } catch (lookupError: any) {
+                        console.error('Error looking up user in checkLoginStatus:', lookupError);
+                        if (lookupError.response?.status === 403) {
+                            console.log('User lookup forbidden, setting user to null.');
+                            setUser(null);
+                        } else {
+                            await logout();
+                        }
+                    }
                 }
+            } else {
+                console.log('No token found, user set to null');
+                setUser(null);
             }
         } catch (error) {
             console.error('Error checking login status:', error);
@@ -52,20 +84,30 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         }
     };
 
+    // 🧩 Handles login and saves token + user info
     const login = async (email: string, password: string) => {
         try {
             setError(null);
             setIsLoading(true);
 
             const response = await apiLogin(email, password);
-            const { token } = response;
-            await saveToken(token, response.role);
+            const { token, user: userData, role } = response;
+            console.log(token, userData, role);
+            console.log(response)
+            await saveToken(token, role);
 
-            const decodedToken: { exp: number, userId: string, role: string } = jwtDecode(token);
-            const userResponse = await api.get(`/user/${decodedToken.userId}/lookup`);
-            const role = decodedToken.role.replace(/[\[\]]/g, '') as User['role'];
-            setUser({ ...userResponse.data, role });
+            const roleFormatted = role.replace(/[\[\]]/g, '') as User['role'];
 
+            const finalUser: User = {
+                id: userData?.id?.toString() ?? 'unknown',
+                fullName: userData?.fullName ?? userData?.fullName ?? 'Unknown User',
+                name: userData?.fullName ?? userData?.fullName ?? 'Unknown User',
+                email: userData?.email ?? 'unknown@example.com',
+                role: roleFormatted,
+            };
+
+            console.log('✅ User set on login:', finalUser);
+            setUser(finalUser);
         } catch (error: any) {
             console.error('Login error:', error);
             setError(error.response?.data?.message || 'Login failed');
@@ -75,10 +117,12 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         }
     };
 
+    // 🧩 Clears token and resets user
     const logout = async () => {
         try {
             await deleteToken();
             setUser(null);
+            console.log('User logged out and token deleted.');
         } catch (error) {
             console.error('Error logging out:', error);
         }
