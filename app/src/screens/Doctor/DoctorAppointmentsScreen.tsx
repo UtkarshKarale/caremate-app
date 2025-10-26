@@ -1,19 +1,103 @@
-import React, { useState } from 'react';
-import { Box, Text, HStack, VStack, ScrollView, Pressable, Badge, Icon, Avatar } from 'native-base';
+import React, { useState, useEffect } from 'react';
+import { Box, Text, HStack, VStack, ScrollView, Pressable, Badge, Icon, Avatar, Spinner } from 'native-base';
 import { MaterialIcons } from '@expo/vector-icons';
 import { TextInput, StyleSheet, View } from 'react-native';
-
-const appointments = [
-    { id: '1', patient: 'John Smith', time: '09:00 AM', date: 'Today', type: 'Check-up', status: 'Completed', avatar: 'https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=400' },
-    { id: '2', patient: 'Emma Wilson', time: '10:30 AM', date: 'Today', type: 'Follow-up', status: 'In Progress', avatar: 'https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=400' },
-    { id: '3', patient: 'Michael Brown', time: '11:00 AM', date: 'Today', type: 'Consultation', status: 'Scheduled', avatar: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=400' },
-    { id: '4', patient: 'Sarah Davis', time: '02:00 PM', date: 'Today', type: 'Emergency', status: 'Urgent', avatar: 'https://images.unsplash.com/photo-1438761681033-6461ffad8d80?w=400' },
-    { id: '5', patient: 'David Lee', time: '09:00 AM', date: 'Tomorrow', type: 'Check-up', status: 'Scheduled', avatar: 'https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=400' },
-];
+import { useAuth } from '@/app/src/screens/context/AuthContext';
+import { getDoctorTodaysAppointments } from '@/lib/api';
 
 export default function DoctorAppointmentsScreen({ navigation }: any) {
+    const { user } = useAuth();
+    const [appointments, setAppointments] = useState([]);
+    const [loading, setLoading] = useState(true);
+    const [error, setError] = useState<string | null>(null);
+
     const [selectedFilter, setSelectedFilter] = useState('All');
     const filters = ['All', 'Today', 'Tomorrow', 'Upcoming'];
+
+    useEffect(() => {
+        const fetchAppointments = async () => {
+            if (!user?.id) return;
+            setLoading(true);
+            try {
+                const data = await getDoctorTodaysAppointments(user.id);
+                setAppointments(data);
+            } catch (err) {
+                setError('Failed to load appointments.');
+                console.error('Error fetching appointments:', err);
+            } finally {
+                setLoading(false);
+            }
+        };
+
+        fetchAppointments();
+    }, [user]);
+
+    const formatAppointmentTime = (timestamp: string) => {
+        const date = new Date(timestamp);
+        return date.toLocaleString('en-US', {
+            hour: '2-digit', minute: '2-digit', hour12: true,
+        });
+    };
+
+    const formatAppointmentDate = (timestamp: string) => {
+        const date = new Date(timestamp);
+        return date.toLocaleDateString('en-US', {
+            day: '2-digit', month: 'short', year: 'numeric',
+        });
+    };
+
+    const renderContent = () => {
+        if (loading) {
+            return <VStack flex={1} justifyContent="center" alignItems="center"><Spinner size="lg" /></VStack>;
+        }
+
+        if (error) {
+            return <VStack flex={1} justifyContent="center" alignItems="center"><Text color="red.500">{error}</Text></VStack>;
+        }
+
+        if (appointments.length === 0) {
+            return <VStack flex={1} justifyContent="center" alignItems="center"><Text>No appointments found for today.</Text></VStack>;
+        }
+
+        return (
+            <ScrollView flex={1} px={4} showsVerticalScrollIndicator={false}>
+                {appointments.map((apt: any) => (
+                    <Pressable key={apt.id} onPress={() => navigation.navigate('DoctorAppointmentDetails', { appointment: apt })}>
+                        <Box bg="white" borderRadius="xl" shadow={2} p={4} mb={4}>
+                            <HStack space={3} alignItems="center">
+                                <Avatar bg="blue.100" size="lg">
+                                    <Text color="blue.600" fontWeight="bold" fontSize="2xl">
+                                        {apt.patient?.fullName?.charAt(0).toUpperCase()}
+                                    </Text>
+                                </Avatar>
+                                <VStack flex={1}>
+                                    <Text fontWeight="bold" fontSize="md">{apt.patient?.fullName}</Text>
+                                    <Text fontSize="sm" color="gray.600">{apt.reason || 'N/A'}</Text>
+                                    <HStack alignItems="center" space={2} mt={1}>
+                                        <HStack alignItems="center" space={1}>
+                                            <Icon as={MaterialIcons} name="access-time" size={4} color="gray.500" />
+                                            <Text fontSize="sm" color="gray.500">{formatAppointmentTime(apt.appointmentDateTime)}</Text>
+                                        </HStack>
+                                        <Text fontSize="sm" color="gray.400">•</Text>
+                                        <Text fontSize="sm" color="gray.500">{formatAppointmentDate(apt.appointmentDateTime)}</Text>
+                                    </HStack>
+                                </VStack>
+                                <VStack alignItems="flex-end" space={2}>
+                                    <Badge
+                                        colorScheme={apt.status === 'CANCELLED' ? 'error' : 'info'}
+                                        variant="subtle"
+                                    >
+                                        {apt.status}
+                                    </Badge>
+                                    <Icon as={MaterialIcons} name="chevron-right" size={6} color="gray.400" />
+                                </VStack>
+                            </HStack>
+                        </Box>
+                    </Pressable>
+                ))}
+            </ScrollView>
+        );
+    };
 
     return (
         <Box flex={1} bg="gray.50">
@@ -23,13 +107,10 @@ export default function DoctorAppointmentsScreen({ navigation }: any) {
                     <Pressable mr={3} onPress={() => navigation.goBack()}>
                         <Icon as={MaterialIcons} name="arrow-back" size={6} color="white" />
                     </Pressable>
-                    <VStack flex={1}>
-                        <Text fontSize="2xl" fontWeight="bold" color="white">Appointments</Text>
+                    <VStack  flex={1}>
+                        <Text mt={5} fontSize="2xl" fontWeight="bold" color="white">Today's Appointments</Text>
                         <Text fontSize="sm" color="green.100">Manage your schedule</Text>
                     </VStack>
-                    <Pressable bg="green.500" p={2} borderRadius="full">
-                        <Icon as={MaterialIcons} name="add" size={6} color="white" />
-                    </Pressable>
                 </HStack>
             </Box>
 
@@ -43,7 +124,7 @@ export default function DoctorAppointmentsScreen({ navigation }: any) {
                     />
                 </View>
 
-                {/* Filter Tabs */}
+                {/* Filter Tabs - Note: API only fetches today's appointments, so these filters are for UI demonstration */}
                 <ScrollView horizontal showsHorizontalScrollIndicator={false}>
                     <HStack space={2}>
                         {filters.map(filter => (
@@ -72,52 +153,7 @@ export default function DoctorAppointmentsScreen({ navigation }: any) {
             </Box>
 
             {/* Appointments List */}
-            <ScrollView flex={1} px={4} showsVerticalScrollIndicator={false}>
-                {appointments.map(apt => (
-                    <Pressable key={apt.id}>
-                        <Box bg="white" borderRadius="xl" shadow={2} p={4} mb={4}>
-                            <HStack space={3} alignItems="center">
-                                <Avatar size="lg" source={{ uri: apt.avatar }} />
-                                <VStack flex={1}>
-                                    <Text fontWeight="bold" fontSize="md">{apt.patient}</Text>
-                                    <Text fontSize="sm" color="gray.600">{apt.type}</Text>
-                                    <HStack alignItems="center" space={2} mt={1}>
-                                        <HStack alignItems="center" space={1}>
-                                            <Icon as={MaterialIcons} name="access-time" size={4} color="gray.500" />
-                                            <Text fontSize="sm" color="gray.500">{apt.time}</Text>
-                                        </HStack>
-                                        <Text fontSize="sm" color="gray.400">•</Text>
-                                        <Text fontSize="sm" color="gray.500">{apt.date}</Text>
-                                    </HStack>
-                                </VStack>
-                                <VStack alignItems="flex-end" space={2}>
-                                    <Badge
-                                        bg={
-                                            apt.status === 'Urgent' ? 'red.100' :
-                                                apt.status === 'In Progress' ? 'blue.100' :
-                                                    apt.status === 'Completed' ? 'green.100' : 'yellow.100'
-                                        }
-                                        _text={{
-                                            color:
-                                                apt.status === 'Urgent' ? 'red.700' :
-                                                    apt.status === 'In Progress' ? 'blue.700' :
-                                                        apt.status === 'Completed' ? 'green.700' : 'yellow.700',
-                                            fontWeight: 'semibold',
-                                            fontSize: 'xs'
-                                        }}
-                                        borderRadius="full"
-                                        px={3}
-                                        py={1}
-                                    >
-                                        {apt.status}
-                                    </Badge>
-                                    <Icon as={MaterialIcons} name="chevron-right" size={6} color="gray.400" />
-                                </VStack>
-                            </HStack>
-                        </Box>
-                    </Pressable>
-                ))}
-            </ScrollView>
+            {renderContent()}
         </Box>
     );
 }

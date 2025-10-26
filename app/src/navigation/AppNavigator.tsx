@@ -39,6 +39,9 @@ import DoctorHomeScreen from '../screens/Doctor/DoctorHomeScreen';
 import DoctorAppointmentsScreen from '../screens/Doctor/DoctorAppointmentsScreen';
 import DoctorPatientsScreen from '../screens/Doctor/DoctorPatientsScreen';
 import DoctorProfileScreen from '../screens/Doctor/DoctorProfileScreen';
+import DoctorAppointmentDetailsScreen from '../screens/Doctor/DoctorAppointmentDetailsScreen';
+import AddPrescriptionScreen from '../screens/Doctor/AddPrescriptionScreen';
+import DoctorPatientDetailsScreen from '../screens/Doctor/DoctorPatientDetailsScreen';
 
 // Receptionist Screens
 import ReceptionistHomeScreen from '../screens/Receptionist/ReceptionistHomeScreen';
@@ -46,6 +49,7 @@ import CheckInScreen from '../screens/Receptionist/CheckInScreen';
 import ReceptionistAppointmentsScreen from '../screens/Receptionist/ReceptionistAppointmentsScreen';
 import PatientRegistryScreen from '../screens/Receptionist/PatientRegistryScreen';
 import ReceptionistProfileScreen from '../screens/Receptionist/ReceptionistProfileScreen';
+import AppointmentDetailsScreen from '../screens/Receptionist/AppointmentDetailsScreen';
 
 import { useAuth } from '@/app/src/screens/context/AuthContext';
 
@@ -124,6 +128,25 @@ function PatientTabNavigator() {
 // DOCTOR NAVIGATION
 // ============================================
 
+function DoctorAppointmentStack() {
+    return (
+        <Stack.Navigator screenOptions={{ headerShown: false }}>
+            <Stack.Screen name="DoctorAppointmentsList" component={DoctorAppointmentsScreen} />
+            <Stack.Screen name="DoctorAppointmentDetails" component={DoctorAppointmentDetailsScreen} />
+            <Stack.Screen name="AddPrescription" component={AddPrescriptionScreen} />
+        </Stack.Navigator>
+    );
+}
+
+function DoctorPatientStack() {
+    return (
+        <Stack.Navigator screenOptions={{ headerShown: false }}>
+            <Stack.Screen name="DoctorPatientsList" component={DoctorPatientsScreen} />
+            <Stack.Screen name="DoctorPatientDetails" component={DoctorPatientDetailsScreen} />
+        </Stack.Navigator>
+    );
+}
+
 function DoctorTabNavigator() {
     return (
         <Tab.Navigator
@@ -154,7 +177,7 @@ function DoctorTabNavigator() {
             />
             <Tab.Screen
                 name="DoctorAppointments"
-                component={DoctorAppointmentsScreen}
+                component={DoctorAppointmentStack}
                 options={{
                     tabBarLabel: 'Appointments',
                     tabBarIcon: ({ color, size }) => (
@@ -164,7 +187,7 @@ function DoctorTabNavigator() {
             />
             <Tab.Screen
                 name="DoctorPatients"
-                component={DoctorPatientsScreen}
+                component={DoctorPatientStack}
                 options={{
                     tabBarLabel: 'Patients',
                     tabBarIcon: ({ color, size }) => (
@@ -205,6 +228,15 @@ function BillingStack() {
     );
 }
 
+function ReceptionistAppointmentStack() {
+    return (
+        <Stack.Navigator screenOptions={{ headerShown: false }}>
+            <Stack.Screen name="ReceptionistAppointmentsList" component={ReceptionistAppointmentsScreen} />
+            <Stack.Screen name="AppointmentDetails" component={AppointmentDetailsScreen} />
+        </Stack.Navigator>
+    );
+}
+
 function ReceptionistTabNavigator() {
     return (
         <Tab.Navigator
@@ -215,7 +247,7 @@ function ReceptionistTabNavigator() {
                 tabBarStyle: {
                     paddingBottom: 5,
                     paddingTop: 5,
-                    height: 60,
+                    height: 80,
                 },
             }}
         >
@@ -250,7 +282,7 @@ function ReceptionistTabNavigator() {
             />
             <Tab.Screen
                 name="ReceptionistAppointments"
-                component={ReceptionistAppointmentsScreen}
+                component={ReceptionistAppointmentStack} // Changed this line
                 options={{
                     tabBarLabel: 'Appointments',
                     tabBarIcon: ({ color, size }) => (
@@ -369,7 +401,6 @@ export default function AppNavigator() {
     }
 
     return (
-//         <NavigationContainer>
             <Stack.Navigator screenOptions={{ headerShown: false }}>
                 {!user ? (
                     // ========== NOT LOGGED IN ==========
@@ -394,6 +425,5 @@ export default function AppNavigator() {
                     </>
                 )}
             </Stack.Navigator>
-//         </NavigationContainer>
     );
 }

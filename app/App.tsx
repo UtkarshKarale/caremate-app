@@ -4,6 +4,7 @@ import { SafeAreaProvider } from 'react-native-safe-area-context';
 import { NavigationContainer } from '@react-navigation/native';
 import AppNavigator from './src/navigation/AppNavigator';
 import { AuthProvider } from '@/app/src/screens/context/AuthContext';
+import { ToastProvider } from '@/app/src/screens/context/ToastContext';
 import { patchNativeBaseOutlineBug } from "@/app/src/fixes/nativeBaseFix";
 
 patchNativeBaseOutlineBug();
@@ -33,9 +34,11 @@ export default function App() {
         <SafeAreaProvider>
             <NativeBaseProvider theme={theme}>
                 <AuthProvider>
-                    <NavigationContainer>
-                        <AppNavigator />
-                    </NavigationContainer>
+                    <ToastProvider>
+                        <NavigationContainer>
+                            <AppNavigator />
+                        </NavigationContainer>
+                    </ToastProvider>
                 </AuthProvider>
             </NativeBaseProvider>
         </SafeAreaProvider>

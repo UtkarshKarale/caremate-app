@@ -125,6 +125,17 @@ export const getAllAppointments = async () => {
   }
 };
 
+export const getAppointmentById = async (id: string) => {
+  try {
+    const response = await api.get(`/appointments/${id}`);
+    return response.data;
+  } catch (error) {
+    // @ts-ignore
+    console.error('Get appointment by id error:', error.response?.data || error.message);
+    throw error;
+  }
+};
+
 
 export const getUserAppointments = async (userId) => {
   const token = await getToken();
@@ -148,6 +159,50 @@ export const getDoctorTodaysAppointments = async (doctorId: string) => {
   } catch (error) {
     // @ts-ignore
     console.error('Get doctor todays appointments error:', error.response?.data || error.message);
+    throw error;
+  }
+};
+
+export const getAppointmentsByDoctor = async (doctorId: string) => {
+  try {
+    const response = await api.get(`/appointments/doctor/${doctorId}`);
+    return response.data;
+  } catch (error) {
+    // @ts-ignore
+    console.error('Get appointments by doctor error:', error.response?.data || error.message);
+    throw error;
+  }
+};
+
+export const updateAppointmentStatus = async (appointmentId: string, newStatus: string) => {
+  try {
+    const response = await api.put(`/appointments/${appointmentId}/status`, { status: newStatus });
+    return response.data;
+  } catch (error) {
+    // @ts-ignore
+    console.error('Update appointment status error:', error.response?.data || error.message);
+    throw error;
+  }
+};
+
+export const createPrescription = async (prescriptionData: any) => {
+  try {
+    const response = await api.post(`/prescriptions/add`, prescriptionData);
+    return response.data;
+  } catch (error) {
+    // @ts-ignore
+    console.error('Create prescription error:', error.response?.data || error.message);
+    throw error;
+  }
+};
+
+export const getPrescriptionsByPatientId = async (patientId: string) => {
+  try {
+    const response = await api.get(`/prescriptions/patient/${patientId}`);
+    return response.data;
+  } catch (error) {
+    // @ts-ignore
+    console.error('Get prescriptions by patient id error:', error.response?.data || error.message);
     throw error;
   }
 };

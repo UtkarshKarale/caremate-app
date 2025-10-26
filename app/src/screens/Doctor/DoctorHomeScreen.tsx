@@ -76,24 +76,11 @@ export default function DoctorHomeScreen({ navigation }: any) {
             <Box bg="green.600" pb={6} pt={4} px={4} borderBottomLeftRadius={24} borderBottomRightRadius={24}>
                 <HStack justifyContent="space-between" alignItems="center" mb={6}>
                     <VStack>
-                        <Text fontSize="sm" color="green.100">Welcome back,</Text>
+                        <Text mt={5} fontSize="sm" color="green.100">Welcome back,</Text>
                         <Text fontSize="2xl" fontWeight="bold" color="white">Dr. {user?.name || 'Doctor'}</Text>
                         <Text fontSize="sm" color="green.100">{user?.speciality || 'General Physician'}</Text>
                     </VStack>
                     <HStack space={2}>
-                        <Pressable bg="green.500" p={2} borderRadius="full">
-                            <Icon as={MaterialIcons} name="notifications" size={5} color="white" />
-                            <Badge
-                                position="absolute"
-                                top={-1}
-                                right={-1}
-                                bg="red.500"
-                                borderRadius="full"
-                                _text={{ fontSize: 'xs', color: 'white' }}
-                            >
-                                3
-                            </Badge>
-                        </Pressable>
                         <Pressable bg="green.500" p={2} borderRadius="full">
                             <Icon as={MaterialIcons} name="settings" size={5} color="white" />
                         </Pressable>
@@ -166,25 +153,7 @@ export default function DoctorHomeScreen({ navigation }: any) {
                     </Pressable>
                 </HStack>
 
-                <HStack space={4}>
-                    <Pressable flex={1} bg="white" p={6} borderRadius="2xl" shadow={1}>
-                        <VStack alignItems="center" space={2}>
-                            <Box bg="purple.100" p={4} borderRadius="2xl">
-                                <Icon as={MaterialIcons} name="analytics" size={7} color="purple.600" />
-                            </Box>
-                            <Text fontWeight="semibold" textAlign="center" fontSize="sm">Reports</Text>
-                        </VStack>
-                    </Pressable>
 
-                    <Pressable flex={1} bg="white" p={6} borderRadius="2xl" shadow={1}>
-                        <VStack alignItems="center" space={2}>
-                            <Box bg="orange.100" p={4} borderRadius="2xl">
-                                <Icon as={MaterialIcons} name="medication" size={7} color="orange.600" />
-                            </Box>
-                            <Text fontWeight="semibold" textAlign="center" fontSize="sm">Prescriptions</Text>
-                        </VStack>
-                    </Pressable>
-                </HStack>
             </Box>
 
             {/* Today's Appointments */}

@@ -1,19 +1,66 @@
-import React, { useState } from 'react';
-import { Box, Text, HStack, VStack, ScrollView, Pressable, Badge, Icon, Avatar } from 'native-base';
+import React, { useState, useEffect } from 'react';
+import { Box, Text, HStack, VStack, ScrollView, Pressable, Badge, Icon, Avatar, Spinner } from 'native-base';
 import { MaterialIcons } from '@expo/vector-icons';
 import { TextInput, StyleSheet, View } from 'react-native';
-
-const appointments = [
-    { id: '1', patient: 'John Smith', doctor: 'Dr. Sarah Johnson', time: '09:00 AM', status: 'Confirmed', avatar: 'https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=400' },
-    { id: '2', patient: 'Emma Wilson', doctor: 'Dr. Michael Chen', time: '10:30 AM', status: 'Checked In', avatar: 'https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=400' },
-    { id: '3', patient: 'Michael Brown', doctor: 'Dr. Emily Rodriguez', time: '11:00 AM', status: 'Pending', avatar: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=400' },
-    { id: '4', patient: 'Sarah Davis', doctor: 'Dr. James Wilson', time: '02:00 PM', status: 'Confirmed', avatar: 'https://images.unsplash.com/photo-1438761681033-6461ffad8d80?w=400' },
-    { id: '5', patient: 'David Lee', doctor: 'Dr. Sarah Johnson', time: '03:00 PM', status: 'Cancelled', avatar: 'https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=400' },
-];
+import { getAllAppointments } from '@/lib/api';
 
 export default function ReceptionistAppointmentsScreen({ navigation }: any) {
+    const [allAppointments, setAllAppointments] = useState([]);
+    const [filteredAppointments, setFilteredAppointments] = useState([]);
+    const [loadingAppointments, setLoadingAppointments] = useState(true);
+    const [searchQuery, setSearchQuery] = useState('');
     const [selectedFilter, setSelectedFilter] = useState('All');
-    const filters = ['All', 'Confirmed', 'Pending', 'Checked In', 'Cancelled'];
+    const filters = ['All', 'PENDING', 'CHECKED_IN', 'WAITING', 'IN_PROGRESS', 'COMPLETED', 'CANCELLED']; // Updated filters to match backend statuses
+
+    useEffect(() => {
+        const fetchAppointments = async () => {
+            setLoadingAppointments(true);
+            try {
+                const data = await getAllAppointments();
+                setAllAppointments(data);
+                setFilteredAppointments(data); // Initially show all
+            } catch (error) {
+                console.error('Error fetching all appointments:', error);
+            } finally {
+                setLoadingAppointments(false);
+            }
+        };
+
+        fetchAppointments();
+    }, []); // Empty dependency array to fetch once on mount
+
+    useEffect(() => {
+        let currentFiltered = [...allAppointments];
+
+        // Apply status filter
+        if (selectedFilter !== 'All') {
+            currentFiltered = currentFiltered.filter(apt => apt.status === selectedFilter);
+        }
+
+        // Apply search query filter
+        if (searchQuery) {
+            const lowerCaseQuery = searchQuery.toLowerCase();
+            currentFiltered = currentFiltered.filter(apt =>
+                apt.patient?.fullName?.toLowerCase().includes(lowerCaseQuery) ||
+                apt.doctor?.fullName?.toLowerCase().includes(lowerCaseQuery)
+            );
+        }
+
+        setFilteredAppointments(currentFiltered);
+    }, [allAppointments, selectedFilter, searchQuery]);
+
+    const formatAppointmentTime = (timestamp: string) => {
+      const date = new Date(timestamp);
+      const options: Intl.DateTimeFormatOptions = {
+        day: '2-digit',
+        month: 'short',
+        year: 'numeric',
+        hour: '2-digit',
+        minute: '2-digit',
+        hour12: true,
+      };
+      return date.toLocaleString('en-US', options);
+    };
 
     return (
         <Box flex={1} bg="gray.50">
@@ -24,12 +71,9 @@ export default function ReceptionistAppointmentsScreen({ navigation }: any) {
                         <Icon as={MaterialIcons} name="arrow-back" size={6} color="white" />
                     </Pressable>
                     <VStack flex={1}>
-                        <Text fontSize="2xl" fontWeight="bold" color="white">Appointments</Text>
+                        <Text mt={5} fontSize="2xl" fontWeight="bold" color="white">Appointments</Text>
                         <Text fontSize="sm" color="purple.100">Manage all appointments</Text>
                     </VStack>
-                    <Pressable bg="purple.500" p={2} borderRadius="full">
-                        <Icon as={MaterialIcons} name="add" size={6} color="white" />
-                    </Pressable>
                 </HStack>
             </Box>
 
@@ -40,6 +84,8 @@ export default function ReceptionistAppointmentsScreen({ navigation }: any) {
                     <TextInput
                         placeholder="Search appointments..."
                         style={styles.input}
+                        value={searchQuery}
+                        onChangeText={setSearchQuery}
                     />
                 </View>
 
@@ -63,7 +109,7 @@ export default function ReceptionistAppointmentsScreen({ navigation }: any) {
                                     fontSize="sm"
                                     color={selectedFilter === filter ? 'white' : 'gray.700'}
                                 >
-                                    {filter}
+                                    {filter === 'SCHEDULED' ? 'Pending' : filter === 'CHECKED_IN' ? 'Checked In' : filter === 'WAITING' ? 'Waiting' : filter === 'IN_PROGRESS' ? 'In Progress' : filter === 'COMPLETED' ? 'Completed' : filter === 'CANCELLED' ? 'Cancelled' : filter}
                                 </Text>
                             </Pressable>
                         ))}
@@ -72,48 +118,73 @@ export default function ReceptionistAppointmentsScreen({ navigation }: any) {
             </Box>
 
             {/* Appointments List */}
-            <ScrollView flex={1} px={4} showsVerticalScrollIndicator={false}>
-                {appointments.map(apt => (
-                    <Pressable key={apt.id}>
-                        <Box bg="white" borderRadius="xl" shadow={2} p={4} mb={4}>
-                            <HStack space={3} alignItems="center">
-                                <Avatar size="md" source={{ uri: apt.avatar }} />
-                                <VStack flex={1}>
-                                    <Text fontWeight="bold" fontSize="md">{apt.patient}</Text>
-                                    <Text fontSize="sm" color="gray.600">{apt.doctor}</Text>
-                                    <HStack alignItems="center" space={1} mt={1}>
-                                        <Icon as={MaterialIcons} name="access-time" size={4} color="gray.500" />
-                                        <Text fontSize="sm" color="gray.500">{apt.time}</Text>
+            {loadingAppointments ? (
+                <VStack flex={1} justifyContent="center" alignItems="center">
+                    <Spinner size="lg" color="purple.600" />
+                    <Text mt={2} color="gray.500">Loading appointments...</Text>
+                </VStack>
+            ) : (
+                <ScrollView flex={1} px={4} showsVerticalScrollIndicator={false}>
+                    {filteredAppointments.length > 0 ? (
+                        filteredAppointments.map((apt: any) => (
+                            <Pressable key={apt.id} onPress={() => navigation.navigate('AppointmentDetails', { appointment: apt })}>
+                                <Box bg="white" borderRadius="xl" shadow={2} p={4} mb={4}>
+                                    <HStack space={3} alignItems="center">
+                                        <Avatar bg="purple.100" size="md">
+                                            <Text color="purple.600" fontWeight="bold">
+                                                {apt.patient?.fullName?.charAt(0).toUpperCase()}
+                                            </Text>
+                                        </Avatar>
+                                        <VStack flex={1}>
+                                            <Text fontWeight="bold" fontSize="md">{apt.patient?.fullName}</Text>
+                                            <Text fontSize="sm" color="gray.600">with Dr. {apt.doctor?.fullName}</Text>
+                                            <HStack alignItems="center" space={1} mt={1}>
+                                                <Icon as={MaterialIcons} name="access-time" size={4} color="gray.500" />
+                                                <Text fontSize="sm" color="gray.500">{formatAppointmentTime(apt.appointmentDateTime)}</Text>
+                                            </HStack>
+                                        </VStack>
+                                        <VStack alignItems="flex-end" space={2}>
+                                            <Badge
+                                                bg={
+                                                    apt.status === 'SCHEDULED' ? 'yellow.100' :
+                                                    apt.status === 'CHECKED_IN' ? 'green.100' :
+                                                    apt.status === 'WAITING' ? 'orange.100' :
+                                                    apt.status === 'IN_PROGRESS' ? 'blue.100' :
+                                                    apt.status === 'COMPLETED' ? 'gray.200' :
+                                                    apt.status === 'CANCELLED' ? 'red.100' : 'gray.100'
+                                                }
+                                                _text={{
+                                                    color:
+                                                        apt.status === 'SCHEDULED' ? 'yellow.800' :
+                                                        apt.status === 'CHECKED_IN' ? 'green.800' :
+                                                        apt.status === 'WAITING' ? 'orange.800' :
+                                                        apt.status === 'IN_PROGRESS' ? 'blue.800' :
+                                                        apt.status === 'COMPLETED' ? 'gray.800' :
+                                                        apt.status === 'CANCELLED' ? 'red.800' : 'gray.800',
+                                                    fontWeight: 'semibold',
+                                                    fontSize: 'xs'
+                                                }}
+                                                borderRadius="full"
+                                                px={3}
+                                                py={1}
+                                            >
+                                                {apt.status === 'SCHEDULED' ? 'Pending' : apt.status === 'CHECKED_IN' ? 'Checked In' : apt.status === 'WAITING' ? 'Waiting' : apt.status === 'IN_PROGRESS' ? 'In Progress' : apt.status === 'COMPLETED' ? 'Completed' : apt.status === 'CANCELLED' ? 'Cancelled' : apt.status}
+                                            </Badge>
+                                            <Icon as={MaterialIcons} name="chevron-right" size={6} color="gray.400" />
+                                        </VStack>
                                     </HStack>
-                                </VStack>
-                                <VStack alignItems="flex-end" space={2}>
-                                    <Badge
-                                        bg={
-                                            apt.status === 'Checked In' ? 'green.100' :
-                                                apt.status === 'Confirmed' ? 'blue.100' :
-                                                    apt.status === 'Pending' ? 'yellow.100' : 'red.100'
-                                        }
-                                        _text={{
-                                            color:
-                                                apt.status === 'Checked In' ? 'green.700' :
-                                                    apt.status === 'Confirmed' ? 'blue.700' :
-                                                        apt.status === 'Pending' ? 'yellow.700' : 'red.700',
-                                            fontWeight: 'semibold',
-                                            fontSize: 'xs'
-                                        }}
-                                        borderRadius="full"
-                                        px={3}
-                                        py={1}
-                                    >
-                                        {apt.status}
-                                    </Badge>
-                                    <Icon as={MaterialIcons} name="more-vert" size={6} color="gray.400" />
-                                </VStack>
-                            </HStack>
-                        </Box>
-                    </Pressable>
-                ))}
-            </ScrollView>
+                                </Box>
+                            </Pressable>
+                        ))
+                    ) : (
+                        <VStack flex={1} justifyContent="center" alignItems="center" mt={10}>
+                            <Icon as={MaterialIcons} name="event-busy" size={16} color="gray.300" />
+                            <Text mt={4} fontSize="lg" color="gray.500">No appointments found</Text>
+                            <Text fontSize="sm" color="gray.400">Try adjusting your search or filter.</Text>
+                        </VStack>
+                    )}
+                </ScrollView>
+            )}
         </Box>
     );
 }
