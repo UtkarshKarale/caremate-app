@@ -1,15 +1,75 @@
-import React from 'react';
-import { Box, Text, HStack, VStack, ScrollView, Pressable, Badge, Icon, Avatar } from 'native-base';
+import React, { useEffect, useState } from 'react';
+import { Box, Text, HStack, VStack, ScrollView, Pressable, Badge, Icon, Avatar, Spinner } from 'native-base';
 import { MaterialIcons } from '@expo/vector-icons';
-
-const todayAppointments = [
-    { id: '1', patient: 'John Smith', time: '09:00 AM', type: 'Check-up', status: 'Waiting', avatar: 'https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=400' },
-    { id: '2', patient: 'Emma Wilson', time: '10:30 AM', type: 'Follow-up', status: 'In Progress', avatar: 'https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=400' },
-    { id: '3', patient: 'Michael Brown', time: '11:00 AM', type: 'Consultation', status: 'Scheduled', avatar: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=400' },
-    { id: '4', patient: 'Sarah Davis', time: '02:00 PM', type: 'Emergency', status: 'Urgent', avatar: 'https://images.unsplash.com/photo-1438761681033-6461ffad8d80?w=400' },
-];
+import { useAuth } from '../../screens/context/AuthContext';
+import { getDoctorTodaysAppointments } from '@/lib/api';
 
 export default function DoctorHomeScreen({ navigation }: any) {
+    const { user } = useAuth(); // Assuming user is the doctor
+    const [doctorAppointments, setDoctorAppointments] = useState([]);
+    const [loadingAppointments, setLoadingAppointments] = useState(true);
+    const [todaysPatients, setTodaysPatients] = useState(0);
+    const [completedAppointments, setCompletedAppointments] = useState(0);
+    const [pendingAppointments, setPendingAppointments] = useState(0);
+
+    useEffect(() => {
+        const fetchAppointments = async () => {
+            if (!user?.id) return;
+
+            setLoadingAppointments(true);
+            try {
+                const data = await getDoctorTodaysAppointments(user.id);
+
+                // Client-side filter to ensure only today's appointments are shown
+                const today = new Date();
+                today.setHours(0, 0, 0, 0); // Set to start of today
+
+                const filteredData = data.filter(apt => {
+                    const aptDate = new Date(apt.appointmentTime);
+                    aptDate.setHours(0, 0, 0, 0);
+                    return aptDate.getTime() === today.getTime();
+                });
+
+                setDoctorAppointments(filteredData);
+
+                // Calculate stats
+                const total = filteredData.length;
+                const completed = filteredData.filter(apt => apt.status === 'COMPLETED').length;
+                const pending = filteredData.filter(apt => apt.status === 'SCHEDULED' || apt.status === 'PENDING').length;
+
+                setTodaysPatients(total);
+                setCompletedAppointments(completed);
+                setPendingAppointments(pending);
+
+            } catch (error) {
+                console.error('Error fetching doctor appointments:', error);
+            } finally {
+                setLoadingAppointments(false);
+            }
+        };
+
+        fetchAppointments();
+    }, [user?.id]);
+
+    const formatAppointmentTime = (timestamp: string) => {
+      const date = new Date(timestamp);
+      const options: Intl.DateTimeFormatOptions = {
+        hour: '2-digit',
+        minute: '2-digit',
+        hour12: true,
+      };
+      return date.toLocaleString('en-US', options);
+    };
+
+    const formatAppointmentDate = (timestamp: string) => {
+      const date = new Date(timestamp);
+      const options: Intl.DateTimeFormatOptions = {
+        year: 'numeric',
+        month: 'short',
+        day: 'numeric',
+      };
+      return date.toLocaleString('en-US', options);
+    };
     return (
         <ScrollView flex={1} bg="gray.50">
             {/* Header */}
@@ -17,8 +77,8 @@ export default function DoctorHomeScreen({ navigation }: any) {
                 <HStack justifyContent="space-between" alignItems="center" mb={6}>
                     <VStack>
                         <Text fontSize="sm" color="green.100">Welcome back,</Text>
-                        <Text fontSize="2xl" fontWeight="bold" color="white">Dr. Sarah Johnson</Text>
-                        <Text fontSize="sm" color="green.100">Cardiologist</Text>
+                        <Text fontSize="2xl" fontWeight="bold" color="white">Dr. {user?.name || 'Doctor'}</Text>
+                        <Text fontSize="sm" color="green.100">{user?.speciality || 'General Physician'}</Text>
                     </VStack>
                     <HStack space={2}>
                         <Pressable bg="green.500" p={2} borderRadius="full">
@@ -41,26 +101,32 @@ export default function DoctorHomeScreen({ navigation }: any) {
                 </HStack>
 
                 {/* Stats Cards */}
-                <HStack space={3}>
-                    <Box flex={1} bg="white" p={4} borderRadius="xl" shadow={2}>
-                        <VStack space={1}>
-                            <Text fontSize="2xl" fontWeight="bold" color="green.600">12</Text>
-                            <Text fontSize="xs" color="gray.600">Today's Patients</Text>
-                        </VStack>
-                    </Box>
-                    <Box flex={1} bg="white" p={4} borderRadius="xl" shadow={2}>
-                        <VStack space={1}>
-                            <Text fontSize="2xl" fontWeight="bold" color="blue.600">8</Text>
-                            <Text fontSize="xs" color="gray.600">Completed</Text>
-                        </VStack>
-                    </Box>
-                    <Box flex={1} bg="white" p={4} borderRadius="xl" shadow={2}>
-                        <VStack space={1}>
-                            <Text fontSize="2xl" fontWeight="bold" color="orange.600">4</Text>
-                            <Text fontSize="xs" color="gray.600">Pending</Text>
-                        </VStack>
-                    </Box>
-                </HStack>
+                {loadingAppointments ? (
+                    <HStack justifyContent="center" alignItems="center" h={100}>
+                        <Spinner color="white" size="lg" />
+                    </HStack>
+                ) : (
+                    <HStack space={3}>
+                        <Box flex={1} bg="white" p={4} borderRadius="xl" shadow={2}>
+                            <VStack space={1}>
+                                <Text fontSize="2xl" fontWeight="bold" color="green.600">{todaysPatients}</Text>
+                                <Text fontSize="xs" color="gray.600">Today's Patients</Text>
+                            </VStack>
+                        </Box>
+                        <Box flex={1} bg="white" p={4} borderRadius="xl" shadow={2}>
+                            <VStack space={1}>
+                                <Text fontSize="2xl" fontWeight="bold" color="blue.600">{completedAppointments}</Text>
+                                <Text fontSize="xs" color="gray.600">Completed</Text>
+                            </VStack>
+                        </Box>
+                        <Box flex={1} bg="white" p={4} borderRadius="xl" shadow={2}>
+                            <VStack space={1}>
+                                <Text fontSize="2xl" fontWeight="bold" color="orange.600">{pendingAppointments}</Text>
+                                <Text fontSize="xs" color="gray.600">Pending</Text>
+                            </VStack>
+                        </Box>
+                    </HStack>
+                )}
             </Box>
 
             {/* Quick Actions */}
@@ -130,43 +196,60 @@ export default function DoctorHomeScreen({ navigation }: any) {
                     </Pressable>
                 </HStack>
 
-                {todayAppointments.map(apt => (
-                    <Pressable key={apt.id}>
-                        <Box bg="white" p={4} borderRadius="xl" shadow={1} mb={3}>
-                            <HStack space={3} alignItems="center">
-                                <Avatar size="md" source={{ uri: apt.avatar }} />
-                                <VStack flex={1}>
-                                    <Text fontWeight="bold" fontSize="md">{apt.patient}</Text>
-                                    <Text fontSize="sm" color="gray.600">{apt.type}</Text>
+                {loadingAppointments ? (
+                    <Box alignItems="center" mt={4}>
+                        <Spinner size="lg" color="green.600" />
+                        <Text mt={2} color="gray.600">Loading today's appointments...</Text>
+                    </Box>
+                ) : doctorAppointments.length > 0 ? (
+                    doctorAppointments.map(apt => (
+                        <Pressable key={apt.id}>
+                            <Box bg="white" p={4} borderRadius="xl" shadow={1} mb={3}>
+                                <HStack space={3} alignItems="center">
+                                    <Avatar size="md" source={{ uri: apt.patient.image }} >
+                                        {apt.patient.fullName ? apt.patient.fullName.charAt(0).toUpperCase() : 'P'}
+                                    </Avatar>
+                                    <VStack flex={1}>
+                                    <Text fontWeight="bold" fontSize="md">{apt.patient.fullName}</Text>
+                                    <Text fontSize="sm" color="gray.600"> Reason : {apt.disease}</Text>
+                                    <HStack alignItems="center" space={1} mt={1}>
+                                        <Icon as={MaterialIcons} name="calendar-today" size={4} color="gray.500" />
+                                        <Text fontSize="sm" color="gray.500">{formatAppointmentDate(apt.appointmentTime)}</Text>
+                                    </HStack>
                                     <HStack alignItems="center" space={1} mt={1}>
                                         <Icon as={MaterialIcons} name="access-time" size={4} color="gray.500" />
-                                        <Text fontSize="sm" color="gray.500">{apt.time}</Text>
+                                        <Text fontSize="sm" color="gray.500">{formatAppointmentTime(apt.appointmentTime)}</Text>
                                     </HStack>
-                                </VStack>
-                                <Badge
-                                    bg={
-                                        apt.status === 'Urgent' ? 'red.100' :
-                                            apt.status === 'In Progress' ? 'blue.100' :
-                                                apt.status === 'Waiting' ? 'yellow.100' : 'green.100'
-                                    }
-                                    _text={{
-                                        color:
-                                            apt.status === 'Urgent' ? 'red.700' :
-                                                apt.status === 'In Progress' ? 'blue.700' :
-                                                    apt.status === 'Waiting' ? 'yellow.700' : 'green.700',
-                                        fontWeight: 'semibold',
-                                        fontSize: 'xs'
-                                    }}
-                                    borderRadius="full"
-                                    px={3}
-                                    py={1}
-                                >
-                                    {apt.status}
-                                </Badge>
-                            </HStack>
-                        </Box>
-                    </Pressable>
-                ))}
+                                    </VStack>
+                                    <Badge
+                                        bg={
+                                            apt.status === 'URGENT' ? 'red.100' :
+                                                apt.status === 'IN_PROGRESS' ? 'blue.100' :
+                                                    apt.status === 'WAITING' ? 'yellow.100' : 'green.100'
+                                        }
+                                        _text={{
+                                            color:
+                                                apt.status === 'URGENT' ? 'red.700' :
+                                                    apt.status === 'IN_PROGRESS' ? 'blue.700' :
+                                                        apt.status === 'WAITING' ? 'yellow.700' : 'green.700',
+                                            fontWeight: 'semibold',
+                                            fontSize: 'xs'
+                                        }}
+                                        borderRadius="full"
+                                        px={3}
+                                        py={1}
+                                    >
+                                        {apt.status}
+                                    </Badge>
+                                </HStack>
+                            </Box>
+                        </Pressable>
+                    ))
+                ) : (
+                    <Box alignItems="center" mt={4}>
+                        <Text color="gray.600">No appointments scheduled for today.</Text>
+                    </Box>
+                )}
             </Box>
         </ScrollView>
     );

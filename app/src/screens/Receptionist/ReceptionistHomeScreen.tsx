@@ -1,14 +1,63 @@
-import React from 'react';
-import { Box, Text, HStack, VStack, ScrollView, Pressable, Badge, Icon, Avatar } from 'native-base';
+import React, { useEffect, useState } from 'react';
+import { Box, Text, HStack, VStack, ScrollView, Pressable, Badge, Icon, Avatar, Spinner } from 'native-base';
 import { MaterialIcons } from '@expo/vector-icons';
-
-const checkIns = [
-    { id: '1', patient: 'John Smith', doctor: 'Dr. Sarah Johnson', time: '09:00 AM', status: 'Waiting', avatar: 'https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=400' },
-    { id: '2', patient: 'Emma Wilson', doctor: 'Dr. Michael Chen', time: '10:30 AM', status: 'In Room', avatar: 'https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=400' },
-    { id: '3', patient: 'Michael Brown', doctor: 'Dr. Emily Rodriguez', time: '11:00 AM', status: 'Not Arrived', avatar: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=400' },
-];
+import { useAuth } from '../../screens/context/AuthContext';
+import { getAllAppointments } from '@/lib/api';
 
 export default function ReceptionistHomeScreen({ navigation }: any) {
+    const { user } = useAuth(); // Assuming user is the receptionist
+    const [todayAppointments, setTodayAppointments] = useState([]);
+    const [loadingAppointments, setLoadingAppointments] = useState(true);
+    const [totalToday, setTotalToday] = useState(0);
+    const [checkedIn, setCheckedIn] = useState(0);
+    const [waiting, setWaiting] = useState(0);
+
+    useEffect(() => {
+        const fetchAppointments = async () => {
+            if (!user?.id) return;
+
+            setLoadingAppointments(true);
+            try {
+                const allAppointments = await getAllAppointments();
+                const today = new Date();
+                today.setHours(0, 0, 0, 0); // Set to start of today
+
+                const filteredTodayAppointments = allAppointments.filter(apt => {
+                    const aptDate = new Date(apt.appointmentTime);
+                    aptDate.setHours(0, 0, 0, 0);
+                    return aptDate.getTime() === today.getTime();
+                });
+
+                setTodayAppointments(filteredTodayAppointments);
+
+                // Calculate stats
+                const total = filteredTodayAppointments.length;
+                const checkedInCount = filteredTodayAppointments.filter(apt => apt.status === 'CHECKED_IN').length;
+                const waitingCount = filteredTodayAppointments.filter(apt => apt.status === 'WAITING').length;
+
+                setTotalToday(total);
+                setCheckedIn(checkedInCount);
+                setWaiting(waitingCount);
+
+            } catch (error) {
+                console.error('Error fetching receptionist appointments:', error);
+            } finally {
+                setLoadingAppointments(false);
+            }
+        };
+
+        fetchAppointments();
+    }, [user?.id]);
+
+    const formatAppointmentTime = (timestamp: string) => {
+      const date = new Date(timestamp);
+      const options: Intl.DateTimeFormatOptions = {
+        hour: '2-digit',
+        minute: '2-digit',
+        hour12: true,
+      };
+      return date.toLocaleString('en-US', options);
+    };
     return (
         <ScrollView flex={1} bg="gray.50">
             {/* Header */}
@@ -16,7 +65,7 @@ export default function ReceptionistHomeScreen({ navigation }: any) {
                 <HStack justifyContent="space-between" alignItems="center" mb={6}>
                     <VStack>
                         <Text fontSize="sm" color="purple.100">Good Morning,</Text>
-                        <Text fontSize="2xl" fontWeight="bold" color="white">Reception Desk</Text>
+                        <Text fontSize="2xl" fontWeight="bold" color="white">{user?.name || 'Receptionist'}</Text>
                         <Text fontSize="sm" color="purple.100">City General Hospital</Text>
                     </VStack>
                     <HStack space={2}>
@@ -40,26 +89,32 @@ export default function ReceptionistHomeScreen({ navigation }: any) {
                 </HStack>
 
                 {/* Stats Cards */}
-                <HStack space={3}>
-                    <Box flex={1} bg="white" p={4} borderRadius="xl" shadow={2}>
-                        <VStack space={1}>
-                            <Text fontSize="2xl" fontWeight="bold" color="purple.600">24</Text>
-                            <Text fontSize="xs" color="gray.600">Total Today</Text>
-                        </VStack>
-                    </Box>
-                    <Box flex={1} bg="white" p={4} borderRadius="xl" shadow={2}>
-                        <VStack space={1}>
-                            <Text fontSize="2xl" fontWeight="bold" color="green.600">15</Text>
-                            <Text fontSize="xs" color="gray.600">Checked In</Text>
-                        </VStack>
-                    </Box>
-                    <Box flex={1} bg="white" p={4} borderRadius="xl" shadow={2}>
-                        <VStack space={1}>
-                            <Text fontSize="2xl" fontWeight="bold" color="orange.600">9</Text>
-                            <Text fontSize="xs" color="gray.600">Waiting</Text>
-                        </VStack>
-                    </Box>
-                </HStack>
+                {loadingAppointments ? (
+                    <HStack justifyContent="center" alignItems="center" h={100}>
+                        <Spinner color="white" size="lg" />
+                    </HStack>
+                ) : (
+                    <HStack space={3}>
+                        <Box flex={1} bg="white" p={4} borderRadius="xl" shadow={2}>
+                            <VStack space={1}>
+                                <Text fontSize="2xl" fontWeight="bold" color="purple.600">{totalToday}</Text>
+                                <Text fontSize="xs" color="gray.600">Total Today</Text>
+                            </VStack>
+                        </Box>
+                        <Box flex={1} bg="white" p={4} borderRadius="xl" shadow={2}>
+                            <VStack space={1}>
+                                <Text fontSize="2xl" fontWeight="bold" color="green.600">{checkedIn}</Text>
+                                <Text fontSize="xs" color="gray.600">Checked In</Text>
+                            </VStack>
+                        </Box>
+                        <Box flex={1} bg="white" p={4} borderRadius="xl" shadow={2}>
+                            <VStack space={1}>
+                                <Text fontSize="2xl" fontWeight="bold" color="orange.600">{waiting}</Text>
+                                <Text fontSize="xs" color="gray.600">Waiting</Text>
+                            </VStack>
+                        </Box>
+                    </HStack>
+                )}
             </Box>
 
             {/* Quick Actions */}
@@ -136,41 +191,54 @@ export default function ReceptionistHomeScreen({ navigation }: any) {
                     </Pressable>
                 </HStack>
 
-                {checkIns.map(checkIn => (
-                    <Pressable key={checkIn.id}>
-                        <Box bg="white" p={4} borderRadius="xl" shadow={1} mb={3}>
-                            <HStack space={3} alignItems="center">
-                                <Avatar size="md" source={{ uri: checkIn.avatar }} />
-                                <VStack flex={1}>
-                                    <Text fontWeight="bold" fontSize="md">{checkIn.patient}</Text>
-                                    <Text fontSize="sm" color="gray.600">{checkIn.doctor}</Text>
-                                    <HStack alignItems="center" space={1} mt={1}>
-                                        <Icon as={MaterialIcons} name="access-time" size={4} color="gray.500" />
-                                        <Text fontSize="sm" color="gray.500">{checkIn.time}</Text>
-                                    </HStack>
-                                </VStack>
-                                <Badge
-                                    bg={
-                                        checkIn.status === 'In Room' ? 'green.100' :
-                                            checkIn.status === 'Waiting' ? 'yellow.100' : 'gray.100'
-                                    }
-                                    _text={{
-                                        color:
-                                            checkIn.status === 'In Room' ? 'green.700' :
-                                                checkIn.status === 'Waiting' ? 'yellow.700' : 'gray.700',
-                                        fontWeight: 'semibold',
-                                        fontSize: 'xs'
-                                    }}
-                                    borderRadius="full"
-                                    px={3}
-                                    py={1}
-                                >
-                                    {checkIn.status}
-                                </Badge>
-                            </HStack>
-                        </Box>
-                    </Pressable>
-                ))}
+                {loadingAppointments ? (
+                    <Box alignItems="center" mt={4}>
+                        <Spinner size="lg" color="purple.600" />
+                        <Text mt={2} color="gray.600">Loading today's check-ins...</Text>
+                    </Box>
+                ) : todayAppointments.length > 0 ? (
+                    todayAppointments.map(apt => (
+                        <Pressable key={apt.id}>
+                            <Box bg="white" p={4} borderRadius="xl" shadow={1} mb={3}>
+                                <HStack space={3} alignItems="center">
+                                    <Avatar size="md" source={{ uri: apt.patient.image }} >
+                                        {apt.patient.fullName ? apt.patient.fullName.charAt(0).toUpperCase() : 'P'}
+                                    </Avatar>
+                                    <VStack flex={1}>
+                                        <Text fontWeight="bold" fontSize="md">{apt.patient.fullName}</Text>
+                                        <Text fontSize="sm" color="gray.600">Dr. {apt.doctor.fullName}</Text>
+                                        <HStack alignItems="center" space={1} mt={1}>
+                                            <Icon as={MaterialIcons} name="access-time" size={4} color="gray.500" />
+                                            <Text fontSize="sm" color="gray.500">{formatAppointmentTime(apt.appointmentTime)}</Text>
+                                        </HStack>
+                                    </VStack>
+                                    <Badge
+                                        bg={
+                                            apt.status === 'CHECKED_IN' ? 'green.100' :
+                                                apt.status === 'WAITING' ? 'yellow.100' : 'gray.100'
+                                        }
+                                        _text={{
+                                            color:
+                                                apt.status === 'CHECKED_IN' ? 'green.700' :
+                                                    apt.status === 'WAITING' ? 'yellow.700' : 'gray.700',
+                                            fontWeight: 'semibold',
+                                            fontSize: 'xs'
+                                        }}
+                                        borderRadius="full"
+                                        px={3}
+                                        py={1}
+                                    >
+                                        {apt.status}
+                                    </Badge>
+                                </HStack>
+                            </Box>
+                        </Pressable>
+                    ))
+                ) : (
+                    <Box alignItems="center" mt={4}>
+                        <Text color="gray.600">No check-ins scheduled for today.</Text>
+                    </Box>
+                )}
             </Box>
         </ScrollView>
     );
