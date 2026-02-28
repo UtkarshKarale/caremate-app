@@ -19,6 +19,7 @@ export default function SignupScreen({ navigation }: any) {
             alert('Passwords do not match.');
             return;
         }
+        console.log("called")
 
         const userData = {
             fullName,

@@ -3,7 +3,7 @@ import { Box, Text, VStack, Button, Icon, HStack } from 'native-base';
 import { MaterialIcons } from '@expo/vector-icons';
 
 export default function PaymentSuccessScreen({ navigation, route }: any) {
-    const { billNumber, patientName, amount, paymentMethod, change } = route.params;
+    const { billNumber, patientName, amount, paymentMethod, change, status, dueAmount } = route.params;
 
     const handlePrintReceipt = () => {
         alert('Print receipt functionality');
@@ -53,6 +53,14 @@ export default function PaymentSuccessScreen({ navigation, route }: any) {
                         <HStack justifyContent="space-between" alignItems="center">
                             <Text fontSize="md" fontWeight="bold">Amount Paid:</Text>
                             <Text fontSize="2xl" fontWeight="bold" color="green.600">${amount}</Text>
+                        </HStack>
+                        <HStack justifyContent="space-between" alignItems="center">
+                            <Text fontSize="sm" color="gray.600">Bill Status:</Text>
+                            <Text fontSize="sm" fontWeight="bold">{status || 'PAID'}</Text>
+                        </HStack>
+                        <HStack justifyContent="space-between" alignItems="center">
+                            <Text fontSize="sm" color="gray.600">Remaining Due:</Text>
+                            <Text fontSize="sm" fontWeight="bold">${dueAmount || '0.00'}</Text>
                         </HStack>
                         {change !== '0.00' && paymentMethod === 'cash' && (
                             <HStack justifyContent="space-between" alignItems="center" bg="green.50" p={3} borderRadius="lg">

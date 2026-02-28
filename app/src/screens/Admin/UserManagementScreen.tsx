@@ -13,12 +13,13 @@ import { useAuth } from '../context/AuthContext';
 import { Box, Text, HStack, Icon, Pressable } from 'native-base';
 import { MaterialIcons } from '@expo/vector-icons';
 
-export default function UserManagementScreen() {
+const USER_ROLES = ['ALL', 'USER', 'ADMIN', 'DOCTOR', 'PATIENT', 'RECEPTIONIST'];
+
+export default function UserManagementScreen({ route }: any) {
   const [users, setUsers] = useState<any[]>([]);
   const [filteredUsers, setFilteredUsers] = useState<any[]>([]);
   const [loading, setLoading] = useState(false);
   const { user: adminUser } = useAuth();
-  const userRoles = ['ALL', 'USER', 'ADMIN', 'DOCTOR', 'PATIENT', 'RECEPTIONIST'];
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedRole, setSelectedRole] = useState('ALL');
 
@@ -39,6 +40,13 @@ export default function UserManagementScreen() {
   useEffect(() => {
     fetchUsers();
   }, [adminUser?.id]);
+
+  useEffect(() => {
+    const roleFromRoute = route?.params?.initialRole;
+    if (roleFromRoute && USER_ROLES.includes(roleFromRoute)) {
+      setSelectedRole(roleFromRoute);
+    }
+  }, [route?.params?.initialRole]);
 
   useEffect(() => {
     let result = users;
@@ -97,7 +105,7 @@ export default function UserManagementScreen() {
           />
         </HStack>
         <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.filterContainer}>
-          {userRoles.map(role => (
+          {USER_ROLES.map(role => (
             <Pressable
               key={role}
               onPress={() => setSelectedRole(role)}
@@ -149,7 +157,7 @@ export default function UserManagementScreen() {
                     onValueChange={itemValue => handleRoleChange(itemValue, user.id)}
                     style={styles.picker}
                   >
-                    {userRoles.filter(r => r !== 'ALL').map(role => (
+                    {USER_ROLES.filter(r => r !== 'ALL').map(role => (
                       <Picker.Item key={role} label={role} value={role} />
                     ))}
                   </Picker>

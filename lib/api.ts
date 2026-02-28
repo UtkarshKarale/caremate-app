@@ -1,7 +1,7 @@
 import axios from 'axios';
-import { getToken, deleteToken } from './auth';
+import { getToken } from './auth';
 
-const API_URL = 'http://192.168.0.106:8888/api'; // Replace with your actual backend URL
+const API_URL = process.env.EXPO_PUBLIC_API_URL || 'http://localhost:8888/api';
 
 const api = axios.create({
 
@@ -68,6 +68,72 @@ export const getAllDoctors = async () => {
         console.error('Get all doctors error:', error.response?.data || error.message);
         throw error;
     }
+};
+
+export const getHospitals = async () => {
+  try {
+    const response = await api.get(`/hospitals`);
+    return response.data;
+  } catch (error) {
+    // @ts-ignore
+    console.error('Get hospitals error:', error.response?.data || error.message);
+    throw error;
+  }
+};
+
+export const createHospital = async (payload: any) => {
+  try {
+    const response = await api.post(`/hospitals`, payload);
+    return response.data;
+  } catch (error) {
+    // @ts-ignore
+    console.error('Create hospital error:', error.response?.data || error.message);
+    throw error;
+  }
+};
+
+export const updateHospital = async (hospitalId: number, payload: any) => {
+  try {
+    const response = await api.put(`/hospitals/${hospitalId}`, payload);
+    return response.data;
+  } catch (error) {
+    // @ts-ignore
+    console.error('Update hospital error:', error.response?.data || error.message);
+    throw error;
+  }
+};
+
+export const deleteHospital = async (hospitalId: number) => {
+  try {
+    const response = await api.delete(`/hospitals/${hospitalId}`);
+    return response.data;
+  } catch (error) {
+    // @ts-ignore
+    console.error('Delete hospital error:', error.response?.data || error.message);
+    throw error;
+  }
+};
+
+export const getAvailableDoctors = async () => {
+  try {
+    const response = await api.get(`/hospitals/doctors/available`);
+    return response.data;
+  } catch (error) {
+    // @ts-ignore
+    console.error('Get available doctors error:', error.response?.data || error.message);
+    throw error;
+  }
+};
+
+export const replaceHospitalDoctors = async (hospitalId: number, doctorIds: number[]) => {
+  try {
+    const response = await api.put(`/hospitals/${hospitalId}/doctors`, { doctorIds });
+    return response.data;
+  } catch (error) {
+    // @ts-ignore
+    console.error('Replace hospital doctors error:', error.response?.data || error.message);
+    throw error;
+  }
 };
 
 export const getAllUsers = async () => {
@@ -174,13 +240,56 @@ export const getAppointmentsByDoctor = async (doctorId: string) => {
   }
 };
 
-export const updateAppointmentStatus = async (appointmentId: string, newStatus: string) => {
+export const getAppointmentsByDate = async (date: string) => {
   try {
-    const response = await api.put(`/appointments/${appointmentId}/status`, { status: newStatus });
+    const response = await api.get(`/appointments/date/${date}`);
     return response.data;
   } catch (error) {
     // @ts-ignore
-    console.error('Update appointment status error:', error.response?.data || error.message);
+    console.error('Get appointments by date error:', error.response?.data || error.message);
+    throw error;
+  }
+};
+
+export const updateAppointmentStatus = async (appointmentId: string, newStatus: string) => {
+  // Keep frontend labels friendly while staying compatible with backend enums.
+  const backendStatus = newStatus === 'CHECKED_IN' ? 'CHECK_IN' : newStatus;
+  const payload: any = { status: backendStatus };
+  if (backendStatus === 'COMPLETED') {
+    payload.completedOn = new Date().toISOString();
+  }
+
+  const endpoints = [
+    `/appointments/update/${appointmentId}`,
+    `/appointments/${appointmentId}/status`,
+  ];
+
+  let lastError: any = null;
+  for (const endpoint of endpoints) {
+    try {
+      console.log(`📡 Updating appointment status via ${endpoint}`, payload);
+      const response = await api.put(endpoint, payload);
+      return response.data;
+    } catch (error: any) {
+      lastError = error;
+      console.error(
+        `Update appointment status failed on ${endpoint}:`,
+        error?.response?.status,
+        error?.response?.data || error?.message
+      );
+    }
+  }
+
+  throw lastError;
+};
+
+export const createBill = async (payload: any) => {
+  try {
+    const response = await api.post(`/bills`, payload);
+    return response.data;
+  } catch (error) {
+    // @ts-ignore
+    console.error('Create bill error:', error.response?.data || error.message);
     throw error;
   }
 };
@@ -192,6 +301,76 @@ export const createPrescription = async (prescriptionData: any) => {
   } catch (error) {
     // @ts-ignore
     console.error('Create prescription error:', error.response?.data || error.message);
+    throw error;
+  }
+};
+
+export const getAllBills = async () => {
+  try {
+    const response = await api.get(`/bills`);
+    return response.data;
+  } catch (error) {
+    // @ts-ignore
+    console.error('Get all bills error:', error.response?.data || error.message);
+    throw error;
+  }
+};
+
+export const getPendingBills = async () => {
+  try {
+    const response = await api.get(`/bills/pending`);
+    return response.data;
+  } catch (error) {
+    // @ts-ignore
+    console.error('Get pending bills error:', error.response?.data || error.message);
+    throw error;
+  }
+};
+
+export const getBillsByPatientId = async (patientId: string) => {
+  try {
+    const response = await api.get(`/bills/patient/${patientId}`);
+    return response.data;
+  } catch (error) {
+    // @ts-ignore
+    console.error('Get bills by patient error:', error.response?.data || error.message);
+    throw error;
+  }
+};
+
+export const getPendingBillsByPatientId = async (patientId: string) => {
+  try {
+    const response = await api.get(`/bills/patient/${patientId}/pending`);
+    return response.data;
+  } catch (error) {
+    // @ts-ignore
+    console.error('Get pending bills by patient error:', error.response?.data || error.message);
+    throw error;
+  }
+};
+
+export const makeBillPayment = async (billId: number, amount: number, paymentMethod: string, notes?: string) => {
+  try {
+    const response = await api.post(`/bills/${billId}/payment`, {
+      amount,
+      paymentMethod,
+      notes: notes || null,
+    });
+    return response.data;
+  } catch (error) {
+    // @ts-ignore
+    console.error('Make bill payment error:', error.response?.data || error.message);
+    throw error;
+  }
+};
+
+export const cancelBill = async (billId: number) => {
+  try {
+    const response = await api.put(`/bills/${billId}/cancel`);
+    return response.data;
+  } catch (error) {
+    // @ts-ignore
+    console.error('Cancel bill error:', error.response?.data || error.message);
     throw error;
   }
 };

@@ -1,9 +1,9 @@
-import React, { useState, useEffect } from 'react';
-import { Box, Text, HStack, VStack, ScrollView, Pressable, Avatar, Icon, Radio, Button } from 'native-base';
+import React, { useEffect, useMemo, useState } from 'react';
+import { Box, Text, HStack, VStack, ScrollView, Pressable, Avatar, Icon, Button } from 'native-base';
 import { Picker } from '@react-native-picker/picker';
-import { StyleSheet, TextInput, View } from 'react-native';
+import { Alert, StyleSheet, TextInput, View } from 'react-native';
 import { MaterialIcons } from '@expo/vector-icons';
-import { getDoctorTodaysAppointments } from '../../../../lib/api';
+import { getAppointmentsByDoctor } from '../../../../lib/api';
 
 const allTimeSlots = [
     '09:00 AM', '09:30 AM', '10:00 AM', '10:30 AM', '11:00 AM', '11:30 AM',
@@ -37,24 +37,36 @@ const generateDates = () => {
 
 export default function TimeSlotSelectionScreen({ navigation, route }: any) {
     const { doctor } = route.params;
-    const generatedDates = generateDates();
+    const selectedHospital = route?.params?.hospital;
+    const generatedDates = useMemo(() => generateDates(), []);
     const [selectedDateId, setSelectedDateId] = useState(generatedDates[0].id);
     const [selectedTime, setSelectedTime] = useState('');
     const [appointmentType, setAppointmentType] = useState('in-person');
     const [availableSlots, setAvailableSlots] = useState([]);
     const [loading, setLoading] = useState(true);
-    const [doctorFees, setDoctorFees] = useState(100); // Static doctor fees
+    const [doctorFees] = useState(100);
     const [selectedReason, setSelectedReason] = useState('');
     const [customReason, setCustomReason] = useState(''); // For 'Other' option
 
     useEffect(() => {
         const fetchAppointments = async () => {
             if (doctor?.id) {
-                console.log('Doctor ID for fetching appointments:', doctor.id);
                 try {
                     setLoading(true);
-                    const appointments = await getDoctorTodaysAppointments(doctor.id);
-                    const bookedSlots = appointments.map(app => app.time);
+                    const appointments = await getAppointmentsByDoctor(doctor.id);
+                    const selectedDate = generatedDates.find((d) => d.id === selectedDateId)?.fullDate;
+                    const bookedSlots = appointments
+                        .map((app: any) => app.appointmentTime)
+                        .filter(Boolean)
+                        .filter((time: string) => !selectedDate || time.startsWith(selectedDate))
+                        .map((time: string) => {
+                            const date = new Date(time);
+                            return date.toLocaleTimeString('en-US', {
+                                hour: '2-digit',
+                                minute: '2-digit',
+                                hour12: true,
+                            });
+                        });
                     const available = allTimeSlots.filter(slot => !bookedSlots.includes(slot));
                     setAvailableSlots(available);
                 } catch (error) {
@@ -66,9 +78,15 @@ export default function TimeSlotSelectionScreen({ navigation, route }: any) {
         };
 
         fetchAppointments();
-    }, [doctor.id]);
+    }, [doctor.id, selectedDateId, generatedDates]);
 
     const handleConfirm = () => {
+        const reasonForVisit = selectedReason === 'Other' ? customReason.trim() : selectedReason.trim();
+        if (!reasonForVisit) {
+            Alert.alert('Reason Required', 'Please select or enter a reason for visit.');
+            return;
+        }
+
         const selectedDateObj = generatedDates.find(d => d.id === selectedDateId);
         // @ts-ignore
         const appointmentDetails = {
@@ -77,7 +95,7 @@ export default function TimeSlotSelectionScreen({ navigation, route }: any) {
             time: selectedTime,
             type: appointmentType,
             price: doctorFees, // Include doctor fees
-            reasonForVisit: selectedReason === 'Other' ? customReason : selectedReason, // Include reason for visit
+            reasonForVisit,
         };
         navigation.navigate('Confirmation', { appointmentDetails });
     };
@@ -107,6 +125,12 @@ export default function TimeSlotSelectionScreen({ navigation, route }: any) {
                         <VStack flex={1}>
                             <Text fontWeight="bold" fontSize="md">{doctor.fullName}</Text>
                             <Text fontSize="sm" color="gray.600">{doctor.specialist}</Text>
+                            {selectedHospital?.hospitalName ? (
+                                <HStack alignItems="center" space={1}>
+                                    <Icon as={MaterialIcons} name="local-hospital" size={4} color="gray.500" />
+                                    <Text fontSize="sm" color="gray.600">{selectedHospital.hospitalName}</Text>
+                                </HStack>
+                            ) : null}
                             <HStack alignItems="center" space={1}>
                                 <Icon as={MaterialIcons} name="star" size={4} color="yellow.400" />
                                 <Text fontSize="sm">{doctor.rating}</Text>
@@ -201,20 +225,46 @@ export default function TimeSlotSelectionScreen({ navigation, route }: any) {
                 {/* Appointment Type */}
                 <Box mb={6}>
                     <Text fontSize="lg" fontWeight="bold" mb={3}>Appointment Type</Text>
-                    <Radio.Group
-                        name="appointmentType"
-                        value={appointmentType}
-                        onChange={setAppointmentType}
-                    >
-                        <VStack space={3}>
-                            <Radio value="in-person" size="sm" colorScheme="blue">
-                                <Text fontWeight="semibold" ml={2}>In-Person Visit</Text>
-                            </Radio>
-                            <Radio value="video" size="sm" colorScheme="blue">
-                                <Text fontWeight="semibold" ml={2}>Video Consultation</Text>
-                            </Radio>
-                        </VStack>
-                    </Radio.Group>
+                    <VStack space={3}>
+                        <Pressable onPress={() => setAppointmentType('in-person')}>
+                            <HStack
+                                alignItems="center"
+                                space={2}
+                                bg={appointmentType === 'in-person' ? 'blue.50' : 'white'}
+                                p={3}
+                                borderRadius="lg"
+                                borderWidth={1}
+                                borderColor={appointmentType === 'in-person' ? 'blue.500' : 'gray.200'}
+                            >
+                                <Icon
+                                    as={MaterialIcons}
+                                    name={appointmentType === 'in-person' ? 'radio-button-checked' : 'radio-button-unchecked'}
+                                    size={5}
+                                    color={appointmentType === 'in-person' ? 'blue.600' : 'gray.500'}
+                                />
+                                <Text fontWeight="semibold">In-Person Visit</Text>
+                            </HStack>
+                        </Pressable>
+                        <Pressable onPress={() => setAppointmentType('video')}>
+                            <HStack
+                                alignItems="center"
+                                space={2}
+                                bg={appointmentType === 'video' ? 'blue.50' : 'white'}
+                                p={3}
+                                borderRadius="lg"
+                                borderWidth={1}
+                                borderColor={appointmentType === 'video' ? 'blue.500' : 'gray.200'}
+                            >
+                                <Icon
+                                    as={MaterialIcons}
+                                    name={appointmentType === 'video' ? 'radio-button-checked' : 'radio-button-unchecked'}
+                                    size={5}
+                                    color={appointmentType === 'video' ? 'blue.600' : 'gray.500'}
+                                />
+                                <Text fontWeight="semibold">Video Consultation</Text>
+                            </HStack>
+                        </Pressable>
+                    </VStack>
                 </Box>
 
                 {/* Doctor Fees */}
@@ -264,7 +314,7 @@ export default function TimeSlotSelectionScreen({ navigation, route }: any) {
                     borderRadius="xl"
                     py={4}
                     mb={4}
-                    isDisabled={!selectedTime}
+                    isDisabled={!selectedTime || !selectedReason || (selectedReason === 'Other' && !customReason.trim())}
                     onPress={handleConfirm}
                     _pressed={{ bg: 'blue.700' }}
                 >

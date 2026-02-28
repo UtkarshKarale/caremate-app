@@ -15,6 +15,7 @@ import AdminProfileScreen from '@/app/src/screens/Admin/AdminProfileScreen';
 import UserManagementScreen from '@/app/src/screens/Admin/UserManagementScreen';
 import EditUserScreen from '@/app/src/screens/Admin/EditUserScreen';
 import AdminHomeScreen from '@/app/src/screens/Admin/AdminHomeScreen';
+import HospitalManagementScreen from '@/app/src/screens/Admin/HospitalManagementScreen';
 
 // Billing Screens
 import BillingScreen from '../screens/Receptionist/BillingScreen';
@@ -360,9 +361,19 @@ function AdminTabNavigator() {
                 }}
             />
             <Tab.Screen
+                name="Hospitals"
+                component={HospitalManagementScreen}
+                options={{
+                    tabBarIcon: ({ color, size }) => (
+                        <Icon as={MaterialIcons} name="local-hospital" size={size} color={color} />
+                    ),
+                }}
+            />
+            <Tab.Screen
                 name="Reports"
                 component={ReportsAnalyticsScreen}
                 options={{
+                    tabBarLabel: 'Billing',
                     tabBarIcon: ({ color, size }) => (
                         <Icon as={MaterialIcons} name="analytics" size={size} color={color} />
                     ),

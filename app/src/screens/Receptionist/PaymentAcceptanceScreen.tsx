@@ -1,16 +1,19 @@
 import React, { useState } from 'react';
-import { Box, Text, HStack, VStack, ScrollView, Pressable, Icon, Button, Radio } from 'native-base';
+import { Box, Text, HStack, VStack, ScrollView, Pressable, Icon, Button } from 'native-base';
 import { MaterialIcons } from '@expo/vector-icons';
-import { TextInput, StyleSheet, View } from 'react-native';
+import { Alert, TextInput, StyleSheet, View } from 'react-native';
+import { makeBillPayment } from '@/lib/api';
 
 export default function PaymentAcceptanceScreen({ navigation, route }: any) {
-    const { billNumber, patientName, patientId, total } = route.params;
-    const grandTotal = (total * 1.1).toFixed(2);
+    const { billId, billNumber, patientName, patientId, total, dueAmount } = route.params;
+    const payableAmount = Number(dueAmount || total || 0);
+    const grandTotal = payableAmount.toFixed(2);
 
     const [paymentMethod, setPaymentMethod] = useState('cash');
     const [amountReceived, setAmountReceived] = useState('');
     const [cardNumber, setCardNumber] = useState('');
     const [transactionId, setTransactionId] = useState('');
+    const [saving, setSaving] = useState(false);
 
     const calculateChange = () => {
         const received = parseFloat(amountReceived) || 0;
@@ -18,14 +21,53 @@ export default function PaymentAcceptanceScreen({ navigation, route }: any) {
         return Math.max(0, received - totalAmount).toFixed(2);
     };
 
-    const handleProcessPayment = () => {
-        navigation.navigate('PaymentSuccess', {
-            billNumber,
-            patientName,
-            amount: grandTotal,
-            paymentMethod,
-            change: calculateChange(),
-        });
+    const getPaymentMethodEnum = (method: string) => {
+        if (method === 'cash') return 'CASH';
+        if (method === 'card') return 'CARD';
+        if (method === 'upi') return 'UPI';
+        if (method === 'insurance') return 'INSURANCE';
+        return 'CASH';
+    };
+
+    const handleProcessPayment = async () => {
+        if (!billId) {
+            Alert.alert('Missing Bill', 'No bill ID found. Please generate/select a bill first.');
+            return;
+        }
+
+        const amountToPay = paymentMethod === 'cash'
+            ? Math.min((parseFloat(amountReceived) || 0), parseFloat(grandTotal))
+            : parseFloat(grandTotal);
+
+        if (amountToPay <= 0) {
+            Alert.alert('Invalid Amount', 'Please enter a valid payment amount.');
+            return;
+        }
+
+        try {
+            setSaving(true);
+            const updatedBill = await makeBillPayment(
+                Number(billId),
+                amountToPay,
+                getPaymentMethodEnum(paymentMethod),
+                transactionId ? `Transaction: ${transactionId}` : null
+            );
+
+            navigation.navigate('PaymentSuccess', {
+                billNumber: updatedBill.billNumber || billNumber,
+                patientName,
+                amount: Number(updatedBill.paidAmount || amountToPay).toFixed(2),
+                paymentMethod,
+                change: calculateChange(),
+                status: updatedBill.status,
+                dueAmount: Number(updatedBill.dueAmount || 0).toFixed(2),
+            });
+        } catch (error) {
+            console.error('Payment processing failed:', error);
+            Alert.alert('Payment Failed', 'Could not save payment. Please try again.');
+        } finally {
+            setSaving(false);
+        }
     };
 
     return (
@@ -71,34 +113,35 @@ export default function PaymentAcceptanceScreen({ navigation, route }: any) {
                 {/* Payment Method */}
                 <Box bg="white" borderRadius="xl" shadow={1} p={6} mb={4}>
                     <Text fontSize="md" fontWeight="bold" mb={4}>Payment Method</Text>
-                    <Radio.Group name={"paymentMethod"} value={paymentMethod} onChange={setPaymentMethod}>
-                        <VStack space={3}>
-                            <Radio value="cash" colorScheme="purple">
-                                <HStack alignItems="center" space={2} ml={2}>
-                                    <Icon as={MaterialIcons} name="money" size={5} color="green.600" />
-                                    <Text fontWeight="semibold">Cash</Text>
+                    <VStack space={3}>
+                        {[
+                            { value: 'cash', label: 'Cash', icon: 'money', color: 'green.600' },
+                            { value: 'card', label: 'Credit/Debit Card', icon: 'credit-card', color: 'blue.600' },
+                            { value: 'upi', label: 'UPI', icon: 'qr-code', color: 'purple.600' },
+                            { value: 'insurance', label: 'Insurance', icon: 'shield', color: 'orange.600' },
+                        ].map((method) => (
+                            <Pressable key={method.value} onPress={() => setPaymentMethod(method.value)}>
+                                <HStack
+                                    alignItems="center"
+                                    space={3}
+                                    bg={paymentMethod === method.value ? 'purple.50' : 'white'}
+                                    p={3}
+                                    borderRadius="lg"
+                                    borderWidth={1}
+                                    borderColor={paymentMethod === method.value ? 'purple.500' : 'gray.200'}
+                                >
+                                    <Icon
+                                        as={MaterialIcons}
+                                        name={paymentMethod === method.value ? 'radio-button-checked' : 'radio-button-unchecked'}
+                                        size={5}
+                                        color={paymentMethod === method.value ? 'purple.600' : 'gray.500'}
+                                    />
+                                    <Icon as={MaterialIcons} name={method.icon as any} size={5} color={method.color} />
+                                    <Text fontWeight="semibold">{method.label}</Text>
                                 </HStack>
-                            </Radio>
-                            <Radio value="card" colorScheme="purple">
-                                <HStack alignItems="center" space={2} ml={2}>
-                                    <Icon as={MaterialIcons} name="credit-card" size={5} color="blue.600" />
-                                    <Text fontWeight="semibold">Credit/Debit Card</Text>
-                                </HStack>
-                            </Radio>
-                            <Radio value="upi" colorScheme="purple">
-                                <HStack alignItems="center" space={2} ml={2}>
-                                    <Icon as={MaterialIcons} name="qr-code" size={5} color="purple.600" />
-                                    <Text fontWeight="semibold">UPI</Text>
-                                </HStack>
-                            </Radio>
-                            <Radio value="insurance" colorScheme="purple">
-                                <HStack alignItems="center" space={2} ml={2}>
-                                    <Icon as={MaterialIcons} name="shield" size={5} color="orange.600" />
-                                    <Text fontWeight="semibold">Insurance</Text>
-                                </HStack>
-                            </Radio>
-                        </VStack>
-                    </Radio.Group>
+                            </Pressable>
+                        ))}
+                    </VStack>
                 </Box>
 
                 {/* Payment Details */}
@@ -213,6 +256,8 @@ export default function PaymentAcceptanceScreen({ navigation, route }: any) {
                     py={4}
                     mb={6}
                     onPress={handleProcessPayment}
+                    isLoading={saving}
+                    isDisabled={saving}
                     _pressed={{ bg: 'purple.700' }}
                 >
                     <HStack space={2} alignItems="center">

@@ -129,25 +129,6 @@ export default function LoginScreen({ navigation }: any) {
                             </Text>
                         </Button>
 
-                        {/* Or Divider */}
-                        <HStack alignItems="center" space={3} my={2}>
-                            <Box flex={1} h="1px" bg="gray.300" />
-                            <Text fontSize="sm" color="gray.500">OR</Text>
-                            <Box flex={1} h="1px" bg="gray.300" />
-                        </HStack>
-
-                        {/* Social Login */}
-                        <HStack space={3}>
-                            <Pressable flex={1} borderWidth={1} borderColor="gray.300" borderRadius="xl" py={3} alignItems="center">
-                                <Icon as={MaterialIcons} name="g-translate" size={6} color="red.600" />
-                            </Pressable>
-                            <Pressable flex={1} borderWidth={1} borderColor="gray.300" borderRadius="xl" py={3} alignItems="center">
-                                <Icon as={MaterialIcons} name="facebook" size={6} color="blue.700" />
-                            </Pressable>
-                            <Pressable flex={1} borderWidth={1} borderColor="gray.300" borderRadius="xl" py={3} alignItems="center">
-                                <Icon as={MaterialIcons} name="apple" size={6} color="gray.800" />
-                            </Pressable>
-                        </HStack>
                     </VStack>
                 </Box>
 

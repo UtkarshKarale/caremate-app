@@ -37,9 +37,6 @@ export default function ConfirmationScreen({ navigation, route }: any) {
             const appointmentData = {
                 patientId: user.id,
                 doctorId: appointmentDetails.doctor.id,
-                appointmentDate: appointmentDetails.date,
-                appointmentTime: appointmentDetails.time,
-                status: 'SCHEDULED',
                 disease: appointmentDetails.reasonForVisit, // Use reasonForVisit from appointmentDetails
                 price: appointmentDetails.price, // Include price
             };
@@ -48,7 +45,7 @@ export default function ConfirmationScreen({ navigation, route }: any) {
             const timeMatch = appointmentDetails.time.match(/(\d+):(\d+)\s(AM|PM)/);
             if (!timeMatch) throw new Error('Invalid time format');
 
-            const [_, hours, minutes, ampm] = timeMatch;
+            const [, hours, minutes, ampm] = timeMatch;
             const isPM = ampm === 'PM';
             const formattedHours =
                 isPM && hours !== '12'
@@ -68,7 +65,6 @@ export default function ConfirmationScreen({ navigation, route }: any) {
 
             const finalAppointmentData = {
                 ...appointmentData,
-                appointmentDate: combinedDateTime.toISOString(),
                 appointmentTime: combinedDateTime.toISOString(),
             };
 
@@ -141,6 +137,12 @@ export default function ConfirmationScreen({ navigation, route }: any) {
                             <Text color="gray.500">Type</Text>
                             <Text fontWeight="semibold">{appointmentDetails.type}</Text>
                         </HStack>
+                        {appointmentDetails?.doctor?.hospitalName ? (
+                            <HStack justifyContent="space-between">
+                                <Text color="gray.500">Hospital</Text>
+                                <Text fontWeight="semibold">{appointmentDetails.doctor.hospitalName}</Text>
+                            </HStack>
+                        ) : null}
                         <HStack justifyContent="space-between">
                             <Text color="gray.500">Price</Text>
                             <Text fontWeight="semibold">Rs. {appointmentDetails.price}</Text>
